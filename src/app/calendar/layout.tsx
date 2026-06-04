@@ -1,4 +1,4 @@
-import CalendarNav from '@/components/layout/CalendarNav'
+import CalendarTopbar from '@/components/calendar/CalendarTopbar'
 import styles from './calendar.module.css'
 
 export default function CalendarLayout({
@@ -8,7 +8,7 @@ export default function CalendarLayout({
 }) {
   return (
     <div className={styles.content}>
-      <CalendarNav />
+      <CalendarTopbar />
       <main className={styles.main}>{children}</main>
     </div>
   )
