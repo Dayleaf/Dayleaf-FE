@@ -1,28 +1,5 @@
 import dayjs from 'dayjs'
-
-export type CalendarView = 'day' | 'week' | 'month'
-
-export type CalendarCategory = {
-  id: string
-  label: string
-  color: string
-}
-
-export type CalendarEvent = {
-  id: string
-  title: string
-  date: string
-  time?: string
-  categoryId: string
-}
-
-export type CalendarDay = {
-  key: string
-  date: dayjs.Dayjs
-  dayNumber: number
-  isCurrentMonth: boolean
-  isToday: boolean
-}
+import type { CalendarCategory, CalendarDay, CalendarEvent } from '@/types/calendar'
 
 export const calendarCategories: CalendarCategory[] = [
   { id: 'work', label: '업무', color: 'var(--color-work)' },
@@ -33,13 +10,69 @@ export const calendarCategories: CalendarCategory[] = [
 ]
 
 export const sampleEvents: CalendarEvent[] = [
-  { id: '1', title: '캡스톤 회의', date: '2026-06-05', time: '10:00', categoryId: 'work' },
-  { id: '2', title: 'UI 리디자인', date: '2026-06-08', time: '14:00', categoryId: 'study' },
-  { id: '3', title: '아침 루틴', date: '2026-06-10', time: '08:30', categoryId: 'routine' },
-  { id: '4', title: '친구 약속', date: '2026-06-13', time: '18:00', categoryId: 'personal' },
-  { id: '5', title: '중간 발표', date: '2026-06-18', time: '11:00', categoryId: 'important' },
-  { id: '6', title: '기획 정리', date: '2026-06-18', time: '16:00', categoryId: 'work' },
-  { id: '7', title: '회고 작성', date: '2026-06-24', time: '21:00', categoryId: 'routine' },
+  {
+    id: '1',
+    title: '캡스톤 회의',
+    date: '2026-06-05',
+    startTime: '10:00',
+    endTime: '11:00',
+    categoryId: 'work',
+    color: 'var(--color-work)',
+  },
+  {
+    id: '2',
+    title: 'UI 리디자인',
+    date: '2026-06-08',
+    startTime: '14:00',
+    endTime: '16:00',
+    categoryId: 'study',
+    color: 'var(--color-study)',
+  },
+  {
+    id: '3',
+    title: '아침 루틴',
+    date: '2026-06-10',
+    startTime: '08:30',
+    endTime: '09:00',
+    categoryId: 'routine',
+    color: 'var(--color-routine)',
+  },
+  {
+    id: '4',
+    title: '친구 약속',
+    date: '2026-06-13',
+    startTime: '18:00',
+    endTime: '20:00',
+    categoryId: 'personal',
+    color: 'var(--color-personal)',
+  },
+  {
+    id: '5',
+    title: '중간 발표',
+    date: '2026-06-18',
+    startTime: '11:00',
+    endTime: '12:00',
+    categoryId: 'important',
+    color: 'var(--color-important)',
+  },
+  {
+    id: '6',
+    title: '기획 정리',
+    date: '2026-06-18',
+    startTime: '16:00',
+    endTime: '17:30',
+    categoryId: 'work',
+    color: 'var(--color-work)',
+  },
+  {
+    id: '7',
+    title: '회고 작성',
+    date: '2026-06-24',
+    startTime: '21:00',
+    endTime: '21:30',
+    categoryId: 'routine',
+    color: 'var(--color-routine)',
+  },
 ]
 
 export function getMonthDays(baseDate = '2026-06-01') {
@@ -62,4 +95,8 @@ export function getMonthDays(baseDate = '2026-06-01') {
 
 export function getCategoryById(categoryId: string) {
   return calendarCategories.find((category) => category.id === categoryId)
+}
+
+export function getCategoryColor(categoryId: string) {
+  return getCategoryById(categoryId)?.color ?? 'var(--color-brand)'
 }

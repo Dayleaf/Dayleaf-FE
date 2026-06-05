@@ -16,17 +16,39 @@
   --color-brand-soft: #e7f4ec;
   --color-hover: #f3f6f2;
   --color-active: #e7f4ec;
+  --color-overlay: rgba(30, 36, 31, 0.36);
+  --color-cell-muted: #fafbf9;
+  --color-event-soft: color-mix(in srgb, var(--color-brand) 12%, white);
   --color-work: #3b82f6;
   --color-routine: #22c55e;
   --color-personal: #f59e0b;
   --color-study: #8b5cf6;
   --color-important: #ef4444;
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-md: 15px;
+  --font-size-lg: 18px;
+  --font-size-xl: 22px;
+  --line-height-compact: 1.25;
+  --line-height-normal: 1.45;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --calendar-modal-width: 440px;
+  --calendar-min-width: 760px;
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --shadow-sm: 0 1px 2px rgba(20, 28, 20, 0.06);
   --shadow-md: 0 8px 24px rgba(20, 28, 20, 0.08);
   --shadow-popover: 0 16px 40px rgba(20, 28, 20, 0.14);
+  --z-modal: 20;
 }
 
 @theme inline {
@@ -47,7 +69,9 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
