@@ -3,6 +3,7 @@ import {
   clampMinute,
   getEventDuration,
   getMinuteFromPointer,
+  minutesToTime,
   timeToMinutes,
 } from '@/lib/calendar'
 import type { CalendarEvent as CalendarEventType } from '@/types/calendar'
@@ -19,6 +20,7 @@ type CalendarEventProps = {
     startMinute: number,
     endMinute: number,
   ) => void
+  onResizeEnd: () => void
   onResize: (event: CalendarEventType, startMinute: number, endMinute: number) => void
 }
 
@@ -51,9 +53,18 @@ export default function CalendarEvent({
   duration,
   onClick,
   onMove,
+  onResizeEnd,
   onResize,
 }: CalendarEventProps) {
   const [cursorMode, setCursorMode] = useState<'move' | 'resize'>('move')
+  const [resizeFeedback, setResizeFeedback] = useState<{
+    edge: 'top' | 'bottom'
+    time: string
+  } | null>(null)
+  const displayStartTime =
+    resizeFeedback?.edge === 'top' ? resizeFeedback.time : event.startTime
+  const displayEndTime =
+    resizeFeedback?.edge === 'bottom' ? resizeFeedback.time : event.endTime
 
   const handlePointerDown = (pointerEvent: PointerEvent<HTMLDivElement>) => {
     if (pointerEvent.button !== 0) {
@@ -94,11 +105,15 @@ export default function CalendarEvent({
         )
 
         if (resizeEdge === 'top') {
-          onResize(event, Math.min(pointerMinuteOnColumn, endMinute - 30), endMinute)
+          const nextStartMinute = Math.min(pointerMinuteOnColumn, endMinute - 30)
+          setResizeFeedback({ edge: 'top', time: minutesToTime(nextStartMinute) })
+          onResize(event, nextStartMinute, endMinute)
           return
         }
 
-        onResize(event, startMinute, Math.max(pointerMinuteOnColumn, startMinute + 30))
+        const nextEndMinute = Math.max(pointerMinuteOnColumn, startMinute + 30)
+        setResizeFeedback({ edge: 'bottom', time: minutesToTime(nextEndMinute) })
+        onResize(event, startMinute, nextEndMinute)
         return
       }
 
@@ -130,6 +145,12 @@ export default function CalendarEvent({
     const handlePointerUp = () => {
       document.removeEventListener('pointermove', handlePointerMove)
       document.removeEventListener('pointerup', handlePointerUp)
+
+      if (resizeEdge && didMove) {
+        onResizeEnd()
+      }
+
+      setResizeFeedback(null)
 
       if (!didMove) {
         onClick(event)
@@ -169,7 +190,21 @@ export default function CalendarEvent({
     >
       <span className={styles.eventTitle}>{event.title}</span>
       <span className={styles.eventTime}>
-        {event.startTime} - {event.endTime}
+        <span
+          className={
+            resizeFeedback?.edge === 'top' ? styles.activeResizeTime : undefined
+          }
+        >
+          {displayStartTime}
+        </span>
+        <span className={styles.eventTimeDivider}>-</span>
+        <span
+          className={
+            resizeFeedback?.edge === 'bottom' ? styles.activeResizeTime : undefined
+          }
+        >
+          {displayEndTime}
+        </span>
       </span>
     </div>
   )

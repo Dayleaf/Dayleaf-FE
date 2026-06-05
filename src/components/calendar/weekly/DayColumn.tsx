@@ -22,12 +22,14 @@ type DayColumnProps = {
     startMinute: number,
     endMinute: number,
   ) => void
+  onResizeEnd: () => void
   onResizeEvent: (event: CalendarEventType, startMinute: number, endMinute: number) => void
 }
 
 type SelectionState = {
   anchorMinute: number
   clickMinute: number
+  isDragging: boolean
   startClientX: number
   startClientY: number
   startMinute: number
@@ -35,7 +37,6 @@ type SelectionState = {
 }
 
 const clickThreshold = 5
-const clickSnapStep = 30
 const dragSnapStep = 15
 
 export default function DayColumn({
@@ -46,6 +47,7 @@ export default function DayColumn({
   onCreateEvent,
   onEditEvent,
   onMoveEvent,
+  onResizeEnd,
   onResizeEvent,
 }: DayColumnProps) {
   const columnRef = useRef<HTMLDivElement>(null)
@@ -53,7 +55,7 @@ export default function DayColumn({
 
   const getColumnRect = () => columnRef.current?.getBoundingClientRect()
 
-  const handlePointerDown = (pointerEvent: PointerEvent<HTMLElement>) => {
+  const handlePointerDown = (pointerEvent: PointerEvent<HTMLElement>, startHour: number) => {
     if (pointerEvent.button !== 0) {
       return
     }
@@ -70,14 +72,12 @@ export default function DayColumn({
       getMinuteFromPointer(pointerEvent.clientY, rect, dragSnapStep),
       24 * 60 - 15,
     )
-    const clickMinute = Math.min(
-      getMinuteFromPointer(pointerEvent.clientY, rect, clickSnapStep),
-      24 * 60 - 60,
-    )
+    const clickMinute = Math.min(startHour * 60, 24 * 60 - 60)
 
     setDraftSelection({
       anchorMinute: dragMinute,
       clickMinute,
+      isDragging: false,
       startClientX: pointerEvent.clientX,
       startClientY: pointerEvent.clientY,
       startMinute: dragMinute,
@@ -87,6 +87,17 @@ export default function DayColumn({
 
   const handlePointerMove = (pointerEvent: PointerEvent<HTMLElement>) => {
     if (!draftSelection) {
+      return
+    }
+
+    const movementX = Math.abs(pointerEvent.clientX - draftSelection.startClientX)
+    const movementY = Math.abs(pointerEvent.clientY - draftSelection.startClientY)
+
+    if (
+      !draftSelection.isDragging &&
+      movementX <= clickThreshold &&
+      movementY <= clickThreshold
+    ) {
       return
     }
 
@@ -102,6 +113,7 @@ export default function DayColumn({
 
     setDraftSelection({
       ...draftSelection,
+      isDragging: true,
       startMinute,
       endMinute: endMinute === startMinute ? startMinute + 15 : endMinute,
     })
@@ -118,7 +130,8 @@ export default function DayColumn({
 
     const movementX = Math.abs(pointerEvent.clientX - draftSelection.startClientX)
     const movementY = Math.abs(pointerEvent.clientY - draftSelection.startClientY)
-    const isClick = movementX < clickThreshold && movementY < clickThreshold
+    const isClick =
+      !draftSelection.isDragging && movementX <= clickThreshold && movementY <= clickThreshold
     const startMinute = isClick ? draftSelection.clickMinute : draftSelection.startMinute
     const minimumDuration = isClick ? 60 : 15
     const endMinute = isClick
@@ -129,7 +142,7 @@ export default function DayColumn({
     onCreateEvent(day, startMinute, endMinute)
   }
 
-  const visibleSelection = draftSelection ?? selection
+  const visibleSelection = draftSelection?.isDragging ? draftSelection : selection
 
   return (
     <div
@@ -145,13 +158,13 @@ export default function DayColumn({
         ))}
       </div>
       <div className={styles.hourHoverGrid}>
-        {timeSlots.map((time) => (
+        {timeSlots.map((time, index) => (
           <button
             key={time}
             className={styles.hourHoverSlot}
             type="button"
             aria-label={`${day.key} ${time} 일정 추가`}
-            onPointerDown={handlePointerDown}
+            onPointerDown={(pointerEvent) => handlePointerDown(pointerEvent, index)}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
           />
@@ -178,6 +191,7 @@ export default function DayColumn({
           offset={getEventOffset(event.startTime)}
           onClick={onEditEvent}
           onMove={onMoveEvent}
+          onResizeEnd={onResizeEnd}
           onResize={onResizeEvent}
         />
       ))}

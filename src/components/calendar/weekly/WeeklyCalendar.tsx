@@ -122,6 +122,10 @@ export default function WeeklyCalendar() {
     )
   }
 
+  const handleResizeEnd = () => {
+    setSelection(null)
+  }
+
   const handleDeleteEvent = () => {
     if (modalState?.mode !== 'edit') {
       return
@@ -189,6 +193,7 @@ export default function WeeklyCalendar() {
         onCreateEvent={handleCreateEvent}
         onEditEvent={handleEditEvent}
         onMoveEvent={handleMoveEvent}
+        onResizeEnd={handleResizeEnd}
         onResizeEvent={handleResizeEvent}
       />
       {modalState ? (

@@ -16,6 +16,7 @@ type WeeklyGridProps = {
     startMinute: number,
     endMinute: number,
   ) => void
+  onResizeEnd: () => void
   onResizeEvent: (event: CalendarEvent, startMinute: number, endMinute: number) => void
 }
 
@@ -27,6 +28,7 @@ export default function WeeklyGrid({
   onCreateEvent,
   onEditEvent,
   onMoveEvent,
+  onResizeEnd,
   onResizeEvent,
 }: WeeklyGridProps) {
   return (
@@ -43,6 +45,7 @@ export default function WeeklyGrid({
             onCreateEvent={onCreateEvent}
             onEditEvent={onEditEvent}
             onMoveEvent={onMoveEvent}
+            onResizeEnd={onResizeEnd}
             onResizeEvent={onResizeEvent}
           />
         ))}

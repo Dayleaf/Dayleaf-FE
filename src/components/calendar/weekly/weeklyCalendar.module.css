@@ -336,7 +336,7 @@
   font-size: var(--font-size-xs);
   font-weight: 800;
   pointer-events: none;
-  z-index: 2;
+  z-index: 4;
 }
 
 .eventBlock {
@@ -360,6 +360,7 @@
   box-shadow: var(--shadow-sm);
   cursor: grab;
   touch-action: none;
+  user-select: none;
   z-index: 3;
 }
 
@@ -386,10 +387,26 @@
 }
 
 .eventTime {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
   font-weight: 700;
   line-height: var(--line-height-compact);
+  user-select: none;
+}
+
+.eventTimeDivider {
+  color: var(--color-text-subtle);
+}
+
+.activeResizeTime {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--space-5);
+  color: var(--color-important);
+  font-weight: 800;
 }
 
 .modalOverlay {
