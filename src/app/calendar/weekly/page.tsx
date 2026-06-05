@@ -1,7 +1,10 @@
+import { Suspense } from 'react'
+import WeeklyCalendar from '@/components/calendar/weekly/WeeklyCalendar'
+
 export default function WeeklyPage() {
   return (
-    <main>
-      <h1>위클리</h1>
-    </main>
+    <Suspense fallback={null}>
+      <WeeklyCalendar />
+    </Suspense>
   )
 }
