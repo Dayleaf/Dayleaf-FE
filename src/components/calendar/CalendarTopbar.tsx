@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import styles from './calendarTopbar.module.css'
 
 const views = [
@@ -12,6 +12,10 @@ const views = [
 
 export default function CalendarTopbar() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const isWeeklyView = pathname === '/calendar/weekly'
+  const isTodoOpen = searchParams.get('todo') === 'open'
+  const todoHref = isTodoOpen ? '/calendar/weekly' : '/calendar/weekly?todo=open'
 
   return (
     <header className={styles.topbar}>
@@ -46,6 +50,14 @@ export default function CalendarTopbar() {
             </Link>
           ))}
         </nav>
+        {isWeeklyView ? (
+          <Link
+            href={todoHref}
+            className={`${styles.todoButton} ${isTodoOpen ? styles.activeTodoButton : ''}`}
+          >
+            Todo
+          </Link>
+        ) : null}
         <button className={styles.iconButton} type="button" aria-label="설정">
           설정
         </button>

@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import CalendarTopbar from '@/components/calendar/CalendarTopbar'
 import styles from './calendar.module.css'
 
@@ -8,7 +9,9 @@ export default function CalendarLayout({
 }) {
   return (
     <div className={styles.content}>
-      <CalendarTopbar />
+      <Suspense fallback={null}>
+        <CalendarTopbar />
+      </Suspense>
       <main className={styles.main}>{children}</main>
     </div>
   )
