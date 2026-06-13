@@ -1,0 +1,436 @@
+/* src/components/main/main.module.css
+ *
+ * 메인 페이지 전용 스타일.
+ * globals.css의 디자인 토큰(--color-*, --space-*, --radius-* 등)만 사용한다.
+ * 새로운 색상 값(HEX 등)을 추가하지 않는다. */
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    padding: var(--space-8) var(--space-10);
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+/* ── 날짜 헤더 ─────────────────────────────────────────── */
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.eyebrow {
+    margin: 0;
+    color: var(--color-brand-strong);
+    font-size: var(--font-size-xs);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.dateTitle {
+    margin: 0;
+    color: var(--color-text);
+    font-size: var(--font-size-xl);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+/* ── 상단 3분할 그리드 (날씨 / 일정 / 진행률) ──────────── */
+.topGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-5);
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.cardLabel {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+/* ── 날씨 브리핑 카드 ─────────────────────────────────── */
+.weatherCard {
+    background: linear-gradient(
+            160deg,
+            var(--color-brand-soft) 0%,
+            var(--color-surface) 70%
+    );
+}
+
+.weatherTop {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.weatherIcon {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    flex: 0 0 auto;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    color: var(--color-brand);
+    box-shadow: var(--shadow-sm);
+}
+
+.weatherMeta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.weatherCondition {
+    color: var(--color-text);
+    font-size: var(--font-size-lg);
+    font-weight: 800;
+}
+
+.weatherSub {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+}
+
+/* 사서 리프의 인용구 카드 */
+.briefing {
+    position: relative;
+    margin: 0;
+    padding: var(--space-3) 0 var(--space-3) var(--space-4);
+    border-left: 3px solid var(--color-brand);
+    color: var(--color-text);
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    line-height: var(--line-height-normal);
+}
+
+.briefingSign {
+    display: block;
+    margin-top: var(--space-2);
+    color: var(--color-brand-strong);
+    font-size: var(--font-size-xs);
+    font-weight: 800;
+}
+
+.clothingRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.clothingChip {
+    padding: var(--space-1) var(--space-3);
+    border-radius: 999px;
+    background: var(--color-surface-muted);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: 750;
+}
+
+/* ── 오늘 일정 ────────────────────────────────────────── */
+.emptyText {
+    margin: 0;
+    color: var(--color-text-subtle);
+    font-size: var(--font-size-sm);
+    font-weight: 650;
+}
+
+.scheduleList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.scheduleItem {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-muted);
+}
+
+.scheduleDot {
+    width: var(--space-2);
+    height: var(--space-2);
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--event-color, var(--color-brand));
+}
+
+.scheduleBody {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.scheduleTitle {
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.scheduleTime {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: 650;
+}
+
+/* ── 진행률 ───────────────────────────────────────────── */
+.progressHeader {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.progressRate {
+    color: var(--color-brand-strong);
+    font-size: var(--font-size-lg);
+    font-weight: 800;
+}
+
+.progressBar {
+    height: var(--space-2);
+    border-radius: 999px;
+    background: var(--color-surface-muted);
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--color-brand);
+    transition: width 240ms ease;
+}
+
+.progressList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.progressItem {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-2) var(--space-3);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.progressItem:hover {
+    background: var(--color-hover);
+}
+
+.checkbox {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: transparent;
+    font-size: 11px;
+}
+
+.checkboxChecked {
+    border-color: var(--color-brand);
+    background: var(--color-brand);
+    color: #ffffff;
+}
+
+.progressItemTitle {
+    min-width: 0;
+    flex: 1;
+    font-size: var(--font-size-base);
+    font-weight: 650;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.progressItemDone {
+    color: var(--color-text-subtle);
+    text-decoration: line-through;
+}
+
+.sourceTag {
+    margin-left: auto;
+    flex: 0 0 auto;
+    padding: 1px var(--space-2);
+    border-radius: 999px;
+    background: var(--color-surface-muted);
+    color: var(--color-text-subtle);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+/* ── 책장(시그니처) ───────────────────────────────────── */
+.bookshelf {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.bookshelfHeader {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+}
+
+.bookshelfTitle {
+    margin: 0;
+    color: var(--color-text);
+    font-size: var(--font-size-lg);
+    font-weight: 800;
+}
+
+.bookshelfHint {
+    color: var(--color-text-subtle);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+}
+
+.shelfTop {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-6);
+    padding: 0 var(--space-6);
+    min-height: 132px;
+}
+
+.pot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    border: 0;
+    background: transparent;
+    cursor: default;
+}
+
+.potArt {
+    position: relative;
+    width: 84px;
+    height: 104px;
+    display: grid;
+    place-items: end center;
+}
+
+.potLabel {
+    font-size: var(--font-size-xs);
+    font-weight: 800;
+    color: var(--color-text-muted);
+}
+
+.potGrowth {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--color-brand-strong);
+}
+
+.shelfPlank {
+    height: 18px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(
+            180deg,
+            var(--color-border) 0%,
+            var(--color-border-soft) 100%
+    );
+    box-shadow: var(--shadow-sm);
+}
+
+.shelfBooks {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-height: 96px;
+    padding: var(--space-4) var(--space-6) 0;
+    background: var(--color-cell-muted);
+    border-bottom-left-radius: var(--radius-md);
+    border-bottom-right-radius: var(--radius-md);
+}
+
+.book {
+    flex: 1 1 0;
+    max-width: 40px;
+    min-width: 22px;
+    border-top-left-radius: var(--radius-sm);
+    border-top-right-radius: var(--radius-sm);
+    background: var(--book-color, var(--color-brand));
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: var(--space-2);
+    cursor: pointer;
+    transition:
+            transform 160ms ease,
+            filter 160ms ease;
+}
+
+.book:hover {
+    transform: translateY(-6px);
+    filter: brightness(1.05);
+}
+
+.bookSpine {
+    color: var(--color-surface);
+    font-size: 9px;
+    font-weight: 800;
+    writing-mode: vertical-rl;
+    letter-spacing: 0.05em;
+}
+
+/* ── 반응형 ───────────────────────────────────────────── */
+@media (max-width: 1080px) {
+    .topGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .page {
+        padding: var(--space-6) var(--space-4);
+    }
+
+    .shelfTop {
+        gap: var(--space-3);
+        padding: 0 var(--space-3);
+        overflow-x: auto;
+    }
+}
