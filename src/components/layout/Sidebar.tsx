@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { calendarCategories } from '@/lib/calendar'
@@ -22,7 +23,9 @@ export default function Sidebar() {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
-        <span className={styles.logoMark}>D</span>
+        <span className={styles.logoMark} aria-hidden="true">
+          <Image src="/dayleaf-logo.png" alt="" width={34} height={33} priority />
+        </span>
         <span>DayLeaf</span>
       </div>
 
