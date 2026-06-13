@@ -2,7 +2,7 @@ import type { CalendarDay, CalendarEvent } from '@/types/calendar'
 import CalendarCell from './CalendarCell'
 import styles from './monthlyCalendar.module.css'
 
-const weekdays = ['일', '월', '화', '수', '목', '금', '토']
+const weekdays = ['월', '화', '수', '목', '금', '토', '일']
 
 type CalendarGridProps = {
   days: CalendarDay[]

@@ -1,5 +1,7 @@
 'use client'
 
+import { useMemo } from 'react'
+import dayjs from 'dayjs'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import styles from './calendarTopbar.module.css'
@@ -16,6 +18,7 @@ export default function CalendarTopbar() {
   const isWeeklyView = pathname === '/calendar/weekly'
   const isTodoOpen = searchParams.get('todo') === 'open'
   const todoHref = isTodoOpen ? '/calendar/weekly' : '/calendar/weekly?todo=open'
+  const currentMonthLabel = useMemo(() => dayjs().format('YYYY년 M월'), [])
 
   return (
     <header className={styles.topbar}>
@@ -31,7 +34,7 @@ export default function CalendarTopbar() {
             &gt;
           </button>
         </div>
-        <h1 className={styles.currentMonth}>2026년 6월</h1>
+        <h1 className={styles.currentMonth}>{currentMonthLabel}</h1>
       </div>
 
       <div className={styles.rightGroup}>

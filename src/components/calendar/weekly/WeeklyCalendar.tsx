@@ -1,5 +1,6 @@
 'use client'
 
+import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
@@ -16,8 +17,6 @@ import TodoPanel from './TodoPanel'
 import WeekDayHeader from './WeekDayHeader'
 import WeeklyGrid from './WeeklyGrid'
 import styles from './weeklyCalendar.module.css'
-
-const selectedWeek = '2026-06-05'
 
 type ModalState =
   | { mode: 'create'; date: string; startTime: string; endTime: string; event?: undefined }
@@ -45,7 +44,8 @@ export default function WeeklyCalendar() {
   const [modalState, setModalState] = useState<ModalState>(null)
   const [selection, setSelection] = useState<SelectionState | null>(null)
 
-  const days = useMemo(() => getWeekDays(selectedWeek), [])
+  const selectedWeek = useMemo(() => dayjs().format('YYYY-MM-DD'), [])
+  const days = useMemo(() => getWeekDays(selectedWeek), [selectedWeek])
   const timeSlots = useMemo(() => getTimeSlots(), [])
   const eventsByDate = useMemo(() => {
     return events.reduce<Record<string, CalendarEvent[]>>((groupedEvents, event) => {

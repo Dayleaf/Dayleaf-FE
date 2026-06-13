@@ -38,8 +38,6 @@ type SelectionState = {
   endMinute: number
 }
 
-const defaultDate = '2026-06-08'
-
 function getDailyDay(date: string): CalendarDay {
   const targetDate = dayjs(date)
 
@@ -52,7 +50,7 @@ function getDailyDay(date: string): CalendarDay {
   }
 }
 
-export default function DailyCalendar({ date = defaultDate }: DailyCalendarProps) {
+export default function DailyCalendar({ date }: DailyCalendarProps) {
   const events = useCalendarStore((state) => state.events)
   const todos = useCalendarStore((state) => state.todos)
   const addEvent = useCalendarStore((state) => state.addEvent)
@@ -66,7 +64,8 @@ export default function DailyCalendar({ date = defaultDate }: DailyCalendarProps
   const [selection, setSelection] = useState<SelectionState | null>(null)
   const [draftTodos, setDraftTodos] = useState<CalendarTodo[]>([])
 
-  const day = useMemo(() => getDailyDay(date), [date])
+  const selectedDate = useMemo(() => date ?? dayjs().format('YYYY-MM-DD'), [date])
+  const day = useMemo(() => getDailyDay(selectedDate), [selectedDate])
   const timeSlots = useMemo(() => getTimeSlots(), [])
   const dayEvents = useMemo(() => {
     return events

@@ -1,5 +1,7 @@
 'use client'
 
+import { useMemo } from 'react'
+import dayjs from 'dayjs'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -15,10 +17,25 @@ const navItems = [
   { label: '설정', href: '/' },
 ]
 
-const miniDays = Array.from({ length: 35 }, (_, index) => index - 1)
-
 export default function Sidebar() {
   const pathname = usePathname()
+  const today = useMemo(() => dayjs(), [])
+  const miniMonthTitle = today.format('YYYY년 M월')
+  const miniDays = useMemo(() => {
+    const month = today.startOf('month')
+    const start = month.startOf('week')
+
+    return Array.from({ length: 42 }, (_, index) => {
+      const date = start.add(index, 'day')
+
+      return {
+        key: date.format('YYYY-MM-DD'),
+        dayNumber: date.date(),
+        isCurrentMonth: date.month() === month.month(),
+        isToday: date.isSame(today, 'day'),
+      }
+    })
+  }, [today])
 
   return (
     <aside className={styles.sidebar}>
@@ -54,7 +71,7 @@ export default function Sidebar() {
 
       <section className={styles.section} aria-labelledby="mini-calendar-title">
         <div className={styles.sectionHeader}>
-          <h2 id="mini-calendar-title">2026년 6월</h2>
+          <h2 id="mini-calendar-title">{miniMonthTitle}</h2>
           <div className={styles.miniActions}>
             <button type="button" aria-label="이전 달">
               &lt;
@@ -70,15 +87,15 @@ export default function Sidebar() {
               {weekday}
             </span>
           ))}
-          {miniDays.map((day, index) => (
+          {miniDays.map((day) => (
             <button
-              key={`${day}-${index}`}
-              className={`${styles.miniDay} ${day === 5 ? styles.selectedMiniDay : ''} ${
-                day < 1 || day > 30 ? styles.mutedMiniDay : ''
+              key={day.key}
+              className={`${styles.miniDay} ${day.isToday ? styles.selectedMiniDay : ''} ${
+                day.isCurrentMonth ? '' : styles.mutedMiniDay
               }`}
               type="button"
             >
-              {day < 1 ? '' : day > 30 ? '' : day}
+              {day.isCurrentMonth ? day.dayNumber : ''}
             </button>
           ))}
         </div>

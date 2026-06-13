@@ -206,9 +206,10 @@ export const sampleTodos: CalendarTodo[] = [
   },
 ]
 
-export function getMonthDays(baseDate = '2026-06-01') {
+export function getMonthDays(baseDate = dayjs().format('YYYY-MM-DD')) {
   const month = dayjs(baseDate).startOf('month')
-  const start = month.startOf('week')
+  const daysSinceMonday = month.day() === 0 ? 6 : month.day() - 1
+  const start = month.subtract(daysSinceMonday, 'day')
   const today = dayjs()
 
   return Array.from({ length: 42 }, (_, index): CalendarDay => {
@@ -224,8 +225,10 @@ export function getMonthDays(baseDate = '2026-06-01') {
   })
 }
 
-export function getWeekDays(baseDate = '2026-06-05') {
-  const start = dayjs(baseDate).startOf('week').add(1, 'day')
+export function getWeekDays(baseDate = dayjs().format('YYYY-MM-DD')) {
+  const base = dayjs(baseDate)
+  const daysSinceMonday = base.day() === 0 ? 6 : base.day() - 1
+  const start = base.subtract(daysSinceMonday, 'day')
   const today = dayjs()
 
   return Array.from({ length: 7 }, (_, index): CalendarDay => {

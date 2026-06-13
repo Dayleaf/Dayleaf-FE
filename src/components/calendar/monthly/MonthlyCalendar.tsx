@@ -1,14 +1,13 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import dayjs from 'dayjs'
 import { calendarCategories, getCategoryColor, getMonthDays } from '@/lib/calendar'
 import { useCalendarStore } from '@/stores/calendarStore'
 import type { CalendarDay, CalendarEvent, CalendarEventDraft } from '@/types/calendar'
 import CalendarGrid from './CalendarGrid'
 import EventModal from './EventModal'
 import styles from './monthlyCalendar.module.css'
-
-const selectedMonth = '2026-06-01'
 
 type ModalState =
   | { mode: 'create'; date: string; event?: undefined }
@@ -22,7 +21,8 @@ export default function MonthlyCalendar() {
   const deleteEvent = useCalendarStore((state) => state.deleteEvent)
   const [modalState, setModalState] = useState<ModalState>(null)
 
-  const days = useMemo(() => getMonthDays(selectedMonth), [])
+  const selectedMonth = useMemo(() => dayjs().format('YYYY-MM-DD'), [])
+  const days = useMemo(() => getMonthDays(selectedMonth), [selectedMonth])
   const eventsByDate = useMemo(() => {
     return events.reduce<Record<string, CalendarEvent[]>>((groupedEvents, event) => {
       const dayEvents = groupedEvents[event.date] ?? []
