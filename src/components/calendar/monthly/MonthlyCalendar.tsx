@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import dayjs from 'dayjs'
+import { useSearchParams } from 'next/navigation'
 import { calendarCategories, getCategoryColor, getMonthDays } from '@/lib/calendar'
 import { useCalendarStore } from '@/stores/calendarStore'
 import type { CalendarDay, CalendarEvent, CalendarEventDraft } from '@/types/calendar'
@@ -15,13 +16,17 @@ type ModalState =
   | null
 
 export default function MonthlyCalendar() {
+  const searchParams = useSearchParams()
   const events = useCalendarStore((state) => state.events)
   const addEvent = useCalendarStore((state) => state.addEvent)
   const updateEvent = useCalendarStore((state) => state.updateEvent)
   const deleteEvent = useCalendarStore((state) => state.deleteEvent)
   const [modalState, setModalState] = useState<ModalState>(null)
 
-  const selectedMonth = useMemo(() => dayjs().format('YYYY-MM-DD'), [])
+  const selectedMonth = useMemo(
+    () => searchParams.get('date') ?? dayjs().format('YYYY-MM-DD'),
+    [searchParams],
+  )
   const days = useMemo(() => getMonthDays(selectedMonth), [selectedMonth])
   const eventsByDate = useMemo(() => {
     return events.reduce<Record<string, CalendarEvent[]>>((groupedEvents, event) => {

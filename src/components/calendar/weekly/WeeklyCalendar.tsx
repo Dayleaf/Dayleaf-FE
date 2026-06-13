@@ -44,7 +44,10 @@ export default function WeeklyCalendar() {
   const [modalState, setModalState] = useState<ModalState>(null)
   const [selection, setSelection] = useState<SelectionState | null>(null)
 
-  const selectedWeek = useMemo(() => dayjs().format('YYYY-MM-DD'), [])
+  const selectedWeek = useMemo(
+    () => searchParams.get('date') ?? dayjs().format('YYYY-MM-DD'),
+    [searchParams],
+  )
   const days = useMemo(() => getWeekDays(selectedWeek), [selectedWeek])
   const timeSlots = useMemo(() => getTimeSlots(), [])
   const eventsByDate = useMemo(() => {
