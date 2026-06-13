@@ -72,14 +72,6 @@ export default function Sidebar() {
       <section className={styles.section} aria-labelledby="mini-calendar-title">
         <div className={styles.sectionHeader}>
           <h2 id="mini-calendar-title">{miniMonthTitle}</h2>
-          <div className={styles.miniActions}>
-            <button type="button" aria-label="이전 달">
-              &lt;
-            </button>
-            <button type="button" aria-label="다음 달">
-              &gt;
-            </button>
-          </div>
         </div>
         <div className={styles.miniCalendar}>
           {['일', '월', '화', '수', '목', '금', '토'].map((weekday) => (
