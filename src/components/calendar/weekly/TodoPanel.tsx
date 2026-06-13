@@ -26,7 +26,7 @@ export default function TodoPanel({
       <div className={styles.todoPanelContent}>
         <div className={styles.todoDayGrid}>
           {days.map((day) => {
-            const dayTodos = todos.filter((todo) => todo.createdAt === day.key)
+            const dayTodos = todos.filter((todo) => (todo.date ?? todo.createdAt) === day.key)
 
             return (
               <section key={day.key} className={styles.todoDayColumn} aria-label={`${day.key} 할 일`}>

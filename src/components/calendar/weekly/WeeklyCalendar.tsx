@@ -8,10 +8,9 @@ import {
   getTimeSlots,
   getWeekDays,
   minutesToTime,
-  sampleEvents,
-  sampleTodos,
 } from '@/lib/calendar'
-import type { CalendarDay, CalendarEvent, CalendarEventDraft, CalendarTodo } from '@/types/calendar'
+import { useCalendarStore } from '@/stores/calendarStore'
+import type { CalendarDay, CalendarEvent, CalendarEventDraft } from '@/types/calendar'
 import EventModal from './EventModal'
 import TodoPanel from './TodoPanel'
 import WeekDayHeader from './WeekDayHeader'
@@ -34,8 +33,15 @@ type SelectionState = {
 export default function WeeklyCalendar() {
   const searchParams = useSearchParams()
   const isTodoOpen = searchParams.get('todo') === 'open'
-  const [events, setEvents] = useState<CalendarEvent[]>(sampleEvents)
-  const [todos, setTodos] = useState<CalendarTodo[]>(sampleTodos)
+  const events = useCalendarStore((state) => state.events)
+  const todos = useCalendarStore((state) => state.todos)
+  const addEvent = useCalendarStore((state) => state.addEvent)
+  const updateEvent = useCalendarStore((state) => state.updateEvent)
+  const deleteEvent = useCalendarStore((state) => state.deleteEvent)
+  const addTodo = useCalendarStore((state) => state.addTodo)
+  const updateTodo = useCalendarStore((state) => state.updateTodo)
+  const toggleTodo = useCalendarStore((state) => state.toggleTodo)
+  const deleteTodo = useCalendarStore((state) => state.deleteTodo)
   const [modalState, setModalState] = useState<ModalState>(null)
   const [selection, setSelection] = useState<SelectionState | null>(null)
 
@@ -69,17 +75,13 @@ export default function WeeklyCalendar() {
 
   const handleSaveEvent = (draft: CalendarEventDraft) => {
     if (modalState?.mode === 'edit') {
-      setEvents((currentEvents) =>
-        currentEvents.map((event) =>
-          event.id === modalState.event.id ? { ...draft, id: modalState.event.id } : event,
-        ),
-      )
+      updateEvent(modalState.event.id, draft)
       setModalState(null)
       setSelection(null)
       return
     }
 
-    setEvents((currentEvents) => [...currentEvents, { ...draft, id: `${Date.now()}` }])
+    addEvent(draft)
     setModalState(null)
     setSelection(null)
   }
@@ -90,18 +92,12 @@ export default function WeeklyCalendar() {
     startMinute: number,
     endMinute: number,
   ) => {
-    setEvents((currentEvents) =>
-      currentEvents.map((event) =>
-        event.id === targetEvent.id
-          ? {
-              ...event,
-              date: nextDate,
-              startTime: minutesToTime(startMinute),
-              endTime: minutesToTime(endMinute),
-            }
-          : event,
-      ),
-    )
+    updateEvent(targetEvent.id, {
+      ...targetEvent,
+      date: nextDate,
+      startTime: minutesToTime(startMinute),
+      endTime: minutesToTime(endMinute),
+    })
   }
 
   const handleResizeEvent = (
@@ -109,17 +105,11 @@ export default function WeeklyCalendar() {
     startMinute: number,
     endMinute: number,
   ) => {
-    setEvents((currentEvents) =>
-      currentEvents.map((event) =>
-        event.id === targetEvent.id
-          ? {
-              ...event,
-              startTime: minutesToTime(startMinute),
-              endTime: minutesToTime(endMinute),
-            }
-          : event,
-      ),
-    )
+    updateEvent(targetEvent.id, {
+      ...targetEvent,
+      startTime: minutesToTime(startMinute),
+      endTime: minutesToTime(endMinute),
+    })
   }
 
   const handleResizeEnd = () => {
@@ -131,9 +121,7 @@ export default function WeeklyCalendar() {
       return
     }
 
-    setEvents((currentEvents) =>
-      currentEvents.filter((event) => event.id !== modalState.event.id),
-    )
+    deleteEvent(modalState.event.id)
     setModalState(null)
   }
 
@@ -143,33 +131,25 @@ export default function WeeklyCalendar() {
   }
 
   const handleAddTodo = (title: string, createdAt: string) => {
-    setTodos((currentTodos) => [
-      ...currentTodos,
-      {
-        id: `${Date.now()}`,
-        title,
-        completed: false,
-        createdAt,
-      },
-    ])
+    addTodo({
+      title,
+      completed: false,
+      date: createdAt,
+      categoryId: 'study',
+      createdAt,
+    })
   }
 
   const handleToggleTodo = (todoId: string) => {
-    setTodos((currentTodos) =>
-      currentTodos.map((todo) =>
-        todo.id === todoId ? { ...todo, completed: !todo.completed } : todo,
-      ),
-    )
+    toggleTodo(todoId)
   }
 
   const handleUpdateTodo = (todoId: string, title: string) => {
-    setTodos((currentTodos) =>
-      currentTodos.map((todo) => (todo.id === todoId ? { ...todo, title } : todo)),
-    )
+    updateTodo(todoId, { title })
   }
 
   const handleDeleteTodo = (todoId: string) => {
-    setTodos((currentTodos) => currentTodos.filter((todo) => todo.id !== todoId))
+    deleteTodo(todoId)
   }
 
   return (

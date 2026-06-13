@@ -42,6 +42,11 @@ export type CalendarTodo = {
   id: string
   title: string
   completed: boolean
+  date?: string
+  categoryId?: string
+  eventId?: string
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+  recurrenceRule?: RecurrenceRule
   createdAt: string
 }
 
@@ -54,3 +59,5 @@ export type CalendarDay = {
 }
 
 export type CalendarEventDraft = Omit<CalendarEvent, 'id'>
+
+export type CalendarTodoDraft = Omit<CalendarTodo, 'id'>

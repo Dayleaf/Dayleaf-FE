@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import type {
   CalendarCategory,
   CalendarEvent,
@@ -16,6 +16,7 @@ type EventModalProps = {
   event?: CalendarEvent
   getCategoryColor: (categoryId: string) => string
   mode: 'create' | 'edit'
+  linkedTodosSlot?: ReactNode
   onClose: () => void
   onDelete: () => void
   onSave: (draft: CalendarEventDraft) => void
@@ -51,6 +52,7 @@ export default function EventModal({
   defaultStartTime,
   event,
   getCategoryColor,
+  linkedTodosSlot,
   mode,
   onClose,
   onDelete,
@@ -172,6 +174,8 @@ export default function EventModal({
             ))}
           </select>
         </label>
+
+        {linkedTodosSlot}
 
         <div className={styles.modalActions}>
           {mode === 'edit' ? (

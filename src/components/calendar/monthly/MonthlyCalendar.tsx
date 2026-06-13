@@ -1,7 +1,8 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { calendarCategories, getCategoryColor, getMonthDays, sampleEvents } from '@/lib/calendar'
+import { calendarCategories, getCategoryColor, getMonthDays } from '@/lib/calendar'
+import { useCalendarStore } from '@/stores/calendarStore'
 import type { CalendarDay, CalendarEvent, CalendarEventDraft } from '@/types/calendar'
 import CalendarGrid from './CalendarGrid'
 import EventModal from './EventModal'
@@ -15,7 +16,10 @@ type ModalState =
   | null
 
 export default function MonthlyCalendar() {
-  const [events, setEvents] = useState<CalendarEvent[]>(sampleEvents)
+  const events = useCalendarStore((state) => state.events)
+  const addEvent = useCalendarStore((state) => state.addEvent)
+  const updateEvent = useCalendarStore((state) => state.updateEvent)
+  const deleteEvent = useCalendarStore((state) => state.deleteEvent)
   const [modalState, setModalState] = useState<ModalState>(null)
 
   const days = useMemo(() => getMonthDays(selectedMonth), [])
@@ -41,22 +45,12 @@ export default function MonthlyCalendar() {
 
   const handleSave = (draft: CalendarEventDraft) => {
     if (modalState?.mode === 'edit') {
-      setEvents((currentEvents) =>
-        currentEvents.map((event) =>
-          event.id === modalState.event.id ? { ...draft, id: modalState.event.id } : event,
-        ),
-      )
+      updateEvent(modalState.event.id, draft)
       setModalState(null)
       return
     }
 
-    setEvents((currentEvents) => [
-      ...currentEvents,
-      {
-        ...draft,
-        id: `${Date.now()}`,
-      },
-    ])
+    addEvent(draft)
     setModalState(null)
   }
 
@@ -65,9 +59,7 @@ export default function MonthlyCalendar() {
       return
     }
 
-    setEvents((currentEvents) =>
-      currentEvents.filter((event) => event.id !== modalState.event.id),
-    )
+    deleteEvent(modalState.event.id)
     setModalState(null)
   }
 
