@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import { create } from 'zustand'
 import {
   calendarCategories as initialNodes,
+  sampleRoutines,
   sampleEvents,
   sampleTodos,
   todoCategories as initialTodoCategories,
@@ -12,6 +13,8 @@ import type {
   CalendarCategory,
   CalendarEvent,
   CalendarEventDraft,
+  CalendarRoutine,
+  CalendarRoutineDraft,
   CalendarTodo,
   CalendarTodoDraft,
 } from '@/types/calendar'
@@ -21,6 +24,7 @@ const DEFAULT_RECURRENCE_COUNT = 12
 type CalendarStore = {
   events: CalendarEvent[]
   todos: CalendarTodo[]
+  routines: CalendarRoutine[]
   nodes: CalendarCategory[]
   visibleNodeIds: string[]
   todoCategories: CalendarCategory[]
@@ -40,6 +44,11 @@ type CalendarStore = {
   toggleTodo: (todoId: string) => void
   deleteTodo: (todoId: string) => void
   reorderTodosByPriority: (todoIds: string[]) => void
+  createRoutineFromTodo: (todoId: string, draft: Omit<CalendarRoutineDraft, 'title'>) => void
+  updateRoutine: (routineId: string, draft: Partial<CalendarRoutineDraft>) => void
+  completeRoutine: (routineId: string) => void
+  reopenRoutine: (routineId: string) => void
+  deleteRoutine: (routineId: string) => void
   addTodoCategory: (label: string) => void
   updateTodoCategory: (categoryId: string, label: string) => void
   deleteTodoCategory: (categoryId: string) => void
@@ -98,6 +107,7 @@ function createId(prefix: string) {
 export const useCalendarStore = create<CalendarStore>((set) => ({
   events: sampleEvents,
   todos: sampleTodos.map((todo, index) => ({ ...todo, priorityOrder: index })),
+  routines: sampleRoutines,
   nodes: initialNodes,
   visibleNodeIds: initialNodes.map((node) => node.id),
   todoCategories: initialTodoCategories,
@@ -222,7 +232,12 @@ export const useCalendarStore = create<CalendarStore>((set) => ({
     }))
   },
   deleteTodo: (todoId) => {
-    set((state) => ({ todos: state.todos.filter((todo) => todo.id !== todoId) }))
+    set((state) => ({
+      todos: state.todos.filter((todo) => todo.id !== todoId),
+      routines: state.routines.map((routine) =>
+        routine.todoId === todoId ? { ...routine, todoId: undefined } : routine,
+      ),
+    }))
   },
   reorderTodosByPriority: (todoIds) => {
     const orderMap = new Map(todoIds.map((todoId, index) => [todoId, index]))
@@ -234,6 +249,70 @@ export const useCalendarStore = create<CalendarStore>((set) => ({
         return priorityOrder === undefined ? todo : { ...todo, priorityOrder }
       }),
     }))
+  },
+  createRoutineFromTodo: (todoId, draft) => {
+    set((state) => {
+      const todo = state.todos.find((candidate) => candidate.id === todoId)
+
+      if (!todo) {
+        return state
+      }
+
+      return {
+        todos: state.todos.map((candidate) =>
+          candidate.id === todoId
+            ? {
+                ...candidate,
+                recurrenceRule: {
+                  frequency: draft.frequency,
+                  until: draft.dueDate,
+                },
+              }
+            : candidate,
+        ),
+        routines: [
+          ...state.routines,
+          {
+            ...draft,
+            id: createId('routine'),
+            title: todo.title,
+            todoId,
+            categoryId: todo.categoryId,
+            completionDates: todo.completed && todo.date ? [todo.date] : [],
+            createdAt: dayjs().format('YYYY-MM-DD'),
+          },
+        ],
+      }
+    })
+  },
+  updateRoutine: (routineId, draft) => {
+    set((state) => ({
+      routines: state.routines.map((routine) =>
+        routine.id === routineId ? { ...routine, ...draft, title: draft.title?.trim() || routine.title } : routine,
+      ),
+    }))
+  },
+  completeRoutine: (routineId) => {
+    set((state) => ({
+      routines: state.routines.map((routine) =>
+        routine.id === routineId
+          ? {
+              ...routine,
+              completedAt: routine.completedAt ?? dayjs().format('YYYY-MM-DD'),
+            }
+          : routine,
+      ),
+    }))
+  },
+  reopenRoutine: (routineId) => {
+    set((state) => ({
+      routines: state.routines.map((routine) =>
+        routine.id === routineId ? { ...routine, completedAt: undefined } : routine,
+      ),
+    }))
+  },
+  deleteRoutine: (routineId) => {
+    set((state) => ({ routines: state.routines.filter((routine) => routine.id !== routineId) }))
   },
   addTodoCategory: (label) => {
     const nextLabel = label.trim()

@@ -1,5 +1,11 @@
 import dayjs from 'dayjs'
-import type { CalendarCategory, CalendarDay, CalendarEvent, CalendarTodo } from '@/types/calendar'
+import type {
+  CalendarCategory,
+  CalendarDay,
+  CalendarEvent,
+  CalendarRoutine,
+  CalendarTodo,
+} from '@/types/calendar'
 
 export const calendarCategories: CalendarCategory[] = [
   { id: 'work', label: '업무', color: 'var(--color-work)' },
@@ -211,6 +217,138 @@ export const sampleTodos: CalendarTodo[] = [
     categoryId: 'todo-personal',
     priority: 'MEDIUM',
     createdAt: '2026-06-07',
+  },
+]
+
+function makeCompletionDates(
+  entries: Array<{
+    year?: number
+    month: number
+    days: number[]
+  }>,
+) {
+  return entries.flatMap(({ days, month, year = 2026 }) =>
+    days.map(
+      (day) =>
+        `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+    ),
+  )
+}
+
+export const sampleRoutines: CalendarRoutine[] = [
+  {
+    id: 'routine-1',
+    title: '아침 러닝',
+    todoId: 'todo-11',
+    categoryId: 'todo-routine',
+    frequency: 'WEEKDAYS',
+    startDate: '2024-01-08',
+    dueDate: '2026-07-31',
+    completionDates: makeCompletionDates([
+      { year: 2024, month: 1, days: [8, 10, 12, 15, 19, 23] },
+      { year: 2024, month: 2, days: [1, 5, 8, 12, 16] },
+      { year: 2024, month: 3, days: [4, 5, 7, 8, 11, 13, 15, 18, 20, 22] },
+      { year: 2024, month: 4, days: [2, 9, 16, 23] },
+      { year: 2024, month: 5, days: [3, 6, 8, 10, 13, 15, 17, 20, 22, 24, 27, 29] },
+      { year: 2024, month: 6, days: [4, 11, 18] },
+      { year: 2024, month: 7, days: [1, 3, 5, 8, 10, 12, 15, 17, 19, 22] },
+      { year: 2024, month: 8, days: [2, 9, 16, 23, 30] },
+      { year: 2024, month: 9, days: [2, 3, 5, 6, 9, 11, 13, 16, 18, 20, 23, 25] },
+      { year: 2024, month: 10, days: [4, 11, 18, 25] },
+      { year: 2024, month: 11, days: [1, 4, 6, 8, 11, 13, 15, 18, 20, 22, 25, 27, 29] },
+      { year: 2024, month: 12, days: [3, 10, 17, 24] },
+      { year: 2025, month: 1, days: [2, 6, 9, 13, 16, 20, 23, 27, 30] },
+      { year: 2025, month: 2, days: [3, 10, 17, 24] },
+      { year: 2025, month: 3, days: [3, 4, 6, 7, 10, 12, 13, 17, 19, 20, 24, 26, 27, 31] },
+      { year: 2025, month: 4, days: [1, 8, 15, 22, 29] },
+      { year: 2025, month: 5, days: [1, 2, 5, 7, 8, 12, 14, 15, 19, 21, 22, 26, 28, 29] },
+      { year: 2025, month: 6, days: [2, 9, 16, 23, 30] },
+      { year: 2025, month: 7, days: [1, 3, 7, 8, 10, 14, 15, 17, 21, 22, 24, 28, 29, 31] },
+      { year: 2025, month: 8, days: [4, 11, 18, 25] },
+      { year: 2025, month: 9, days: [1, 2, 4, 5, 8, 10, 11, 15, 17, 18, 22, 24, 25, 29] },
+      { year: 2025, month: 10, days: [6, 13, 20, 27] },
+      { year: 2025, month: 11, days: [3, 4, 6, 7, 10, 12, 13, 17, 19, 20, 24, 26, 27] },
+      { year: 2025, month: 12, days: [1, 8, 15, 22, 29] },
+      { month: 2, days: [3, 6, 10, 17, 24] },
+      { month: 3, days: [2, 3, 5, 6, 9, 11, 12, 16, 17, 19, 23, 24, 26, 30] },
+      { month: 4, days: [1, 6, 9, 13, 16, 20, 23, 27] },
+      { month: 5, days: [1, 4, 6, 7, 11, 12, 14, 18, 19, 21, 25, 27, 29] },
+      { month: 6, days: [1, 4, 8, 11] },
+    ]),
+    createdAt: '2026-02-03',
+  },
+  {
+    id: 'routine-2',
+    title: '영어 공부',
+    todoId: 'todo-5',
+    categoryId: 'todo-study',
+    frequency: 'DAILY',
+    startDate: '2024-03-01',
+    dueDate: '2026-08-31',
+    completionDates: makeCompletionDates([
+      { year: 2024, month: 3, days: [1, 2, 5, 9, 13, 17, 21, 25, 29] },
+      { year: 2024, month: 4, days: [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25] },
+      { year: 2024, month: 5, days: [2, 6, 10, 14, 18, 22, 26, 30] },
+      { year: 2024, month: 6, days: [1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23, 25] },
+      { year: 2024, month: 7, days: [3, 7, 11, 15, 19, 23, 27, 31] },
+      { year: 2024, month: 8, days: [1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23] },
+      { year: 2024, month: 9, days: [2, 6, 10, 14, 18, 22, 26, 30] },
+      { year: 2024, month: 10, days: [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27] },
+      { year: 2024, month: 11, days: [4, 8, 12, 16, 20, 24, 28] },
+      { year: 2024, month: 12, days: [1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19] },
+      { year: 2025, month: 1, days: [3, 7, 11, 15, 19, 23, 27, 31] },
+      { year: 2025, month: 2, days: [1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19] },
+      { year: 2025, month: 3, days: [2, 6, 10, 14, 18, 22, 26, 30] },
+      { year: 2025, month: 4, days: [1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23] },
+      { year: 2025, month: 5, days: [4, 8, 12, 16, 20, 24, 28] },
+      { year: 2025, month: 6, days: [1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20] },
+      { year: 2025, month: 7, days: [3, 7, 11, 15, 19, 23, 27, 31] },
+      { year: 2025, month: 8, days: [1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22] },
+      { year: 2025, month: 9, days: [4, 8, 12, 16, 20, 24, 28] },
+      { year: 2025, month: 10, days: [1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19] },
+      { year: 2025, month: 11, days: [3, 7, 11, 15, 19, 23, 27] },
+      { year: 2025, month: 12, days: [1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20] },
+      { month: 1, days: [20, 21, 23, 28] },
+      { month: 2, days: [2, 3, 5, 9, 12, 17, 20, 25] },
+      { month: 3, days: [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30] },
+      { month: 4, days: [1, 5, 9, 14, 18, 22, 27] },
+      { month: 5, days: [1, 3, 5, 7, 9, 11, 13, 15, 18, 20, 22, 24, 26, 28, 31] },
+      { month: 6, days: [2, 6, 10] },
+    ]),
+    createdAt: '2026-01-20',
+  },
+  {
+    id: 'routine-3',
+    title: '자바 스터디',
+    todoId: 'todo-1',
+    categoryId: 'todo-study',
+    frequency: 'WEEKLY',
+    startDate: '2024-09-05',
+    dueDate: '2026-05-28',
+    completedAt: '2026-05-28',
+    completionDates: makeCompletionDates([
+      { year: 2024, month: 9, days: [5, 19] },
+      { year: 2024, month: 10, days: [3, 10, 17, 24, 31] },
+      { year: 2024, month: 11, days: [7, 21] },
+      { year: 2024, month: 12, days: [5, 12, 19] },
+      { year: 2025, month: 1, days: [2, 9, 16, 23, 30] },
+      { year: 2025, month: 2, days: [13, 27] },
+      { year: 2025, month: 3, days: [6, 13, 20, 27] },
+      { year: 2025, month: 4, days: [3, 17] },
+      { year: 2025, month: 5, days: [1, 8, 15, 22, 29] },
+      { year: 2025, month: 6, days: [12, 26] },
+      { year: 2025, month: 7, days: [3, 10, 17, 24, 31] },
+      { year: 2025, month: 8, days: [14, 28] },
+      { year: 2025, month: 9, days: [4, 11, 18, 25] },
+      { year: 2025, month: 10, days: [9, 23] },
+      { year: 2025, month: 11, days: [6, 13, 20, 27] },
+      { year: 2025, month: 12, days: [11, 25] },
+      { month: 2, days: [26] },
+      { month: 3, days: [5, 19] },
+      { month: 4, days: [2, 9, 16, 30] },
+      { month: 5, days: [7, 14, 21, 28] },
+    ]),
+    createdAt: '2026-02-26',
   },
 ]
 

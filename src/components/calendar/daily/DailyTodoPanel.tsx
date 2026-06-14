@@ -1,6 +1,14 @@
 'use client'
 
-import { useMemo, useState, type CSSProperties, type DragEvent, type FormEvent, type KeyboardEvent } from 'react'
+import {
+  useMemo,
+  useState,
+  type CSSProperties,
+  type DragEvent,
+  type FormEvent,
+  type KeyboardEvent,
+} from 'react'
+import RoutineModal from '@/components/routine/RoutineModal'
 import { useCalendarStore } from '@/stores/calendarStore'
 import type { CalendarTodo } from '@/types/calendar'
 import styles from './dailyCalendar.module.css'
@@ -36,6 +44,7 @@ export default function DailyTodoPanel({ date }: DailyTodoPanelProps) {
   const [editingTodoId, setEditingTodoId] = useState<string | null>(null)
   const [editingTodoTitle, setEditingTodoTitle] = useState('')
   const [editingTodoCategoryId, setEditingTodoCategoryId] = useState('')
+  const [routineTodo, setRoutineTodo] = useState<CalendarTodo | null>(null)
   const [draggingTodoId, setDraggingTodoId] = useState<string | null>(null)
   const [dragOverTodoId, setDragOverTodoId] = useState<string | null>(null)
   const [isDragOverEnd, setIsDragOverEnd] = useState(false)
@@ -292,7 +301,13 @@ export default function DailyTodoPanel({ date }: DailyTodoPanelProps) {
               <button type="button" onClick={() => deleteTodo(todo.id)}>
                 삭제
               </button>
-              <button type="button" onClick={() => setOpenTodoMenuId(null)}>
+              <button
+                type="button"
+                onClick={() => {
+                  setRoutineTodo(todo)
+                  setOpenTodoMenuId(null)
+                }}
+              >
                 루틴화
               </button>
             </div>
@@ -531,6 +546,7 @@ export default function DailyTodoPanel({ date }: DailyTodoPanelProps) {
           </div>
         </section>
       )}
+      {routineTodo ? <RoutineModal todo={routineTodo} onClose={() => setRoutineTodo(null)} /> : null}
     </section>
   )
 }

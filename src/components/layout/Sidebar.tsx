@@ -15,9 +15,6 @@ const navItems = [
   { label: '캘린더', href: '/calendar' },
   { label: '라이브러리', href: '/library' },
   { label: '루틴', href: '/routine' },
-  { label: '일기', href: '/' },
-  { label: '친구', href: '/' },
-  { label: '설정', href: '/' },
 ]
 
 export default function Sidebar() {

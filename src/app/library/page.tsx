@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import { useEffect, useRef, useState, type DragEvent, type FormEvent } from 'react'
 import EventTodoList from '@/components/calendar/daily/EventTodoList'
 import EventModal from '@/components/calendar/weekly/EventModal'
+import RoutineModal from '@/components/routine/RoutineModal'
 import { useCalendarStore } from '@/stores/calendarStore'
 import type { CalendarEvent, CalendarEventDraft, CalendarTodo } from '@/types/calendar'
 import styles from './library.module.css'
@@ -132,6 +133,7 @@ export default function LibraryPage() {
   const [editingTodoId, setEditingTodoId] = useState<string | null>(null)
   const [editingTodoTitle, setEditingTodoTitle] = useState('')
   const [editingTodoCategoryId, setEditingTodoCategoryId] = useState('')
+  const [routineTodo, setRoutineTodo] = useState<CalendarTodo | null>(null)
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null)
   const [dragOverNodeId, setDragOverNodeId] = useState<string | null>(null)
   const [isDragOverEnd, setIsDragOverEnd] = useState(false)
@@ -699,7 +701,10 @@ export default function LibraryPage() {
                                         </button>
                                         <button
                                           type="button"
-                                          onClick={() => setOpenTodoMenuId(null)}
+                                          onClick={() => {
+                                            setRoutineTodo(todo)
+                                            setOpenTodoMenuId(null)
+                                          }}
                                         >
                                           루틴화
                                         </button>
@@ -913,7 +918,10 @@ export default function LibraryPage() {
                                                       </button>
                                                       <button
                                                         type="button"
-                                                        onClick={() => setOpenTodoMenuId(null)}
+                                                        onClick={() => {
+                                                          setRoutineTodo(todo)
+                                                          setOpenTodoMenuId(null)
+                                                        }}
                                                       >
                                                         루틴화
                                                       </button>
@@ -1123,6 +1131,7 @@ export default function LibraryPage() {
           onSave={handleSaveEvent}
         />
       ) : null}
+      {routineTodo ? <RoutineModal todo={routineTodo} onClose={() => setRoutineTodo(null)} /> : null}
     </main>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, type KeyboardEvent } from 'react'
+import RoutineModal from '@/components/routine/RoutineModal'
 import type { CalendarCategory, CalendarTodo, CalendarTodoDraft } from '@/types/calendar'
 import styles from './dailyCalendar.module.css'
 
@@ -30,6 +31,7 @@ export default function EventTodoList({
   const [editingTodoId, setEditingTodoId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [editingCategoryId, setEditingCategoryId] = useState(initialCategoryId)
+  const [routineTodo, setRoutineTodo] = useState<CalendarTodo | null>(null)
 
   const handleAddTodo = () => {
     const nextTitle = title.trim()
@@ -148,7 +150,13 @@ export default function EventTodoList({
                   <button type="button" onClick={() => onDeleteTodo(todo.id)}>
                     삭제
                   </button>
-                  <button type="button" onClick={() => setOpenTodoMenuId(null)}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRoutineTodo(todo)
+                      setOpenTodoMenuId(null)
+                    }}
+                  >
                     루틴화
                   </button>
                 </div>
@@ -183,6 +191,7 @@ export default function EventTodoList({
           </button>
         </div>
       </div>
+      {routineTodo ? <RoutineModal todo={routineTodo} onClose={() => setRoutineTodo(null)} /> : null}
     </section>
   )
 }

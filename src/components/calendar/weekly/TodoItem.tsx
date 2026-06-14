@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import RoutineModal from '@/components/routine/RoutineModal'
 import type { CalendarCategory, CalendarTodo, CalendarTodoDraft } from '@/types/calendar'
 import styles from './weeklyCalendar.module.css'
 
@@ -21,6 +22,7 @@ export default function TodoItem({
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [title, setTitle] = useState(todo.title)
   const [categoryId, setCategoryId] = useState(todo.categoryId ?? categories[0]?.id ?? '')
+  const [routineTodo, setRoutineTodo] = useState<CalendarTodo | null>(null)
 
   const handleSubmit = (submitEvent: FormEvent<HTMLFormElement>) => {
     submitEvent.preventDefault()
@@ -91,13 +93,20 @@ export default function TodoItem({
               <button type="button" onClick={() => onDeleteTodo(todo.id)}>
                 삭제
               </button>
-              <button type="button" onClick={() => setIsMenuOpen(false)}>
+              <button
+                type="button"
+                onClick={() => {
+                  setRoutineTodo(todo)
+                  setIsMenuOpen(false)
+                }}
+              >
                 루틴화
               </button>
             </div>
           ) : null}
         </div>
       )}
+      {routineTodo ? <RoutineModal todo={routineTodo} onClose={() => setRoutineTodo(null)} /> : null}
     </div>
   )
 }

@@ -52,6 +52,23 @@ export type CalendarTodo = {
   createdAt: string
 }
 
+export type RoutineFrequency = 'DAILY' | 'WEEKLY' | 'WEEKDAYS' | 'MONTHLY'
+
+export type CalendarRoutine = {
+  id: string
+  title: string
+  todoId?: string
+  categoryId?: string
+  frequency: RoutineFrequency
+  startDate: string
+  dueDate: string
+  completedAt?: string
+  completionDates: string[]
+  createdAt: string
+}
+
+export type CalendarRoutineDraft = Omit<CalendarRoutine, 'id' | 'completionDates' | 'createdAt'>
+
 export type CalendarDay = {
   key: string
   date: dayjs.Dayjs
