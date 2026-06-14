@@ -4,14 +4,13 @@ import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
-  calendarCategories,
-  getCategoryColor,
   getTimeSlots,
   getWeekDays,
   minutesToTime,
 } from '@/lib/calendar'
 import { useCalendarStore } from '@/stores/calendarStore'
-import type { CalendarDay, CalendarEvent, CalendarEventDraft } from '@/types/calendar'
+import type { CalendarDay, CalendarEvent, CalendarEventDraft, CalendarTodo, CalendarTodoDraft } from '@/types/calendar'
+import EventTodoList from '../daily/EventTodoList'
 import EventModal from './EventModal'
 import TodoPanel from './TodoPanel'
 import WeekDayHeader from './WeekDayHeader'
@@ -33,6 +32,9 @@ export default function WeeklyCalendar() {
   const searchParams = useSearchParams()
   const isTodoOpen = searchParams.get('todo') === 'open'
   const events = useCalendarStore((state) => state.events)
+  const nodes = useCalendarStore((state) => state.nodes)
+  const visibleNodeIds = useCalendarStore((state) => state.visibleNodeIds)
+  const todoCategories = useCalendarStore((state) => state.todoCategories)
   const todos = useCalendarStore((state) => state.todos)
   const addEvent = useCalendarStore((state) => state.addEvent)
   const updateEvent = useCalendarStore((state) => state.updateEvent)
@@ -43,6 +45,7 @@ export default function WeeklyCalendar() {
   const deleteTodo = useCalendarStore((state) => state.deleteTodo)
   const [modalState, setModalState] = useState<ModalState>(null)
   const [selection, setSelection] = useState<SelectionState | null>(null)
+  const [draftTodos, setDraftTodos] = useState<CalendarTodo[]>([])
 
   const selectedWeek = useMemo(
     () => searchParams.get('date') ?? dayjs().format('YYYY-MM-DD'),
@@ -50,8 +53,24 @@ export default function WeeklyCalendar() {
   )
   const days = useMemo(() => getWeekDays(selectedWeek), [selectedWeek])
   const timeSlots = useMemo(() => getTimeSlots(), [])
+  const visibleCategoryIds = useMemo(() => {
+    const visibleIdSet = new Set(visibleNodeIds)
+    const isNodeVisible = (nodeId: string): boolean => {
+      if (!visibleIdSet.has(nodeId)) {
+        return false
+      }
+
+      const node = nodes.find((candidate) => candidate.id === nodeId)
+
+      return node?.parentId ? isNodeVisible(node.parentId) : true
+    }
+
+    return new Set(nodes.filter((node) => isNodeVisible(node.id)).map((node) => node.id))
+  }, [nodes, visibleNodeIds])
   const eventsByDate = useMemo(() => {
-    return events.reduce<Record<string, CalendarEvent[]>>((groupedEvents, event) => {
+    return events
+      .filter((event) => visibleCategoryIds.has(event.categoryId))
+      .reduce<Record<string, CalendarEvent[]>>((groupedEvents, event) => {
       const dayEvents = groupedEvents[event.date] ?? []
       return {
         ...groupedEvents,
@@ -59,10 +78,21 @@ export default function WeeklyCalendar() {
           first.startTime.localeCompare(second.startTime),
         ),
       }
-    }, {})
-  }, [events])
+      }, {})
+  }, [events, visibleCategoryIds])
+  const visibleEventIds = useMemo(
+    () => new Set(events.filter((event) => visibleCategoryIds.has(event.categoryId)).map((event) => event.id)),
+    [events, visibleCategoryIds],
+  )
+  const visibleTodos = useMemo(
+    () => todos.filter((todo) => !todo.eventId || visibleEventIds.has(todo.eventId)),
+    [todos, visibleEventIds],
+  )
+  const getNodeColor = (nodeId: string) =>
+    nodes.find((node) => node.id === nodeId)?.color ?? 'var(--color-brand)'
 
   const handleCreateEvent = (day: CalendarDay, startMinute: number, endMinute: number) => {
+    setDraftTodos([])
     setSelection({ date: day.key, startMinute, endMinute })
     setModalState({
       mode: 'create',
@@ -84,7 +114,19 @@ export default function WeeklyCalendar() {
       return
     }
 
-    addEvent(draft)
+    const event = addEvent(draft)
+    draftTodos.forEach((todo) => {
+      addTodo({
+        title: todo.title,
+        completed: todo.completed,
+        date: draft.date,
+        categoryId: todo.categoryId ?? todoCategories[0]?.id,
+        eventId: event.id,
+        priority: todo.priority,
+        createdAt: draft.date,
+      })
+    })
+    setDraftTodos([])
     setModalState(null)
     setSelection(null)
   }
@@ -131,6 +173,7 @@ export default function WeeklyCalendar() {
   const handleCloseModal = () => {
     setModalState(null)
     setSelection(null)
+    setDraftTodos([])
   }
 
   const handleAddTodo = (title: string, createdAt: string) => {
@@ -138,7 +181,7 @@ export default function WeeklyCalendar() {
       title,
       completed: false,
       date: createdAt,
-      categoryId: 'study',
+      categoryId: 'todo-study',
       createdAt,
     })
   }
@@ -154,6 +197,47 @@ export default function WeeklyCalendar() {
   const handleDeleteTodo = (todoId: string) => {
     deleteTodo(todoId)
   }
+  const editingEventTodos = useMemo(() => {
+    if (modalState?.mode !== 'edit') {
+      return []
+    }
+
+    return todos.filter((todo) => todo.eventId === modalState.event.id)
+  }, [modalState, todos])
+  const createDraftTodoId = () => {
+    return `draft-todo-${globalThis.crypto?.randomUUID?.() ?? Date.now()}`
+  }
+  const handleAddDraftTodo = (title: string, categoryId: string) => {
+    const fallbackDate = modalState?.mode === 'create' ? modalState.date : selectedWeek
+
+    setDraftTodos((currentTodos) => [
+      ...currentTodos,
+      {
+        id: createDraftTodoId(),
+        title,
+        completed: false,
+        date: fallbackDate,
+        categoryId,
+        priority: 'MEDIUM',
+        createdAt: fallbackDate,
+      },
+    ])
+  }
+  const handleUpdateDraftTodo = (todoId: string, draft: Partial<CalendarTodoDraft>) => {
+    setDraftTodos((currentTodos) =>
+      currentTodos.map((todo) => (todo.id === todoId ? { ...todo, ...draft } : todo)),
+    )
+  }
+  const handleToggleDraftTodo = (todoId: string) => {
+    setDraftTodos((currentTodos) =>
+      currentTodos.map((todo) =>
+        todo.id === todoId ? { ...todo, completed: !todo.completed } : todo,
+      ),
+    )
+  }
+  const handleDeleteDraftTodo = (todoId: string) => {
+    setDraftTodos((currentTodos) => currentTodos.filter((todo) => todo.id !== todoId))
+  }
 
   return (
     <section className={styles.weeklyCalendar} aria-label="주간 캘린더">
@@ -161,7 +245,7 @@ export default function WeeklyCalendar() {
       {isTodoOpen ? (
         <TodoPanel
           days={days}
-          todos={todos}
+          todos={visibleTodos}
           onAddTodo={handleAddTodo}
           onDeleteTodo={handleDeleteTodo}
           onToggleTodo={handleToggleTodo}
@@ -186,14 +270,47 @@ export default function WeeklyCalendar() {
               ? modalState.event.id
               : `${modalState.date}-${modalState.startTime}`
           }
-          categories={calendarCategories}
+          categories={nodes}
           defaultDate={modalState.mode === 'edit' ? modalState.event.date : modalState.date}
           defaultEndTime={modalState.mode === 'edit' ? modalState.event.endTime : modalState.endTime}
           defaultStartTime={
             modalState.mode === 'edit' ? modalState.event.startTime : modalState.startTime
           }
           event={modalState.mode === 'edit' ? modalState.event : undefined}
-          getCategoryColor={getCategoryColor}
+          getCategoryColor={getNodeColor}
+          linkedTodosSlot={
+            modalState.mode === 'edit' ? (
+              <EventTodoList
+                categories={todoCategories}
+                defaultCategoryId={editingEventTodos[0]?.categoryId ?? todoCategories[0]?.id}
+                todos={editingEventTodos}
+                onAddTodo={(title, categoryId) =>
+                  addTodo({
+                    title,
+                    completed: false,
+                    date: modalState.event.date,
+                    categoryId,
+                    eventId: modalState.event.id,
+                    priority: 'MEDIUM',
+                    createdAt: modalState.event.date,
+                  })
+                }
+                onDeleteTodo={deleteTodo}
+                onToggleTodo={toggleTodo}
+                onUpdateTodo={updateTodo}
+              />
+            ) : (
+              <EventTodoList
+                categories={todoCategories}
+                defaultCategoryId={todoCategories[0]?.id}
+                todos={draftTodos}
+                onAddTodo={handleAddDraftTodo}
+                onDeleteTodo={handleDeleteDraftTodo}
+                onToggleTodo={handleToggleDraftTodo}
+                onUpdateTodo={handleUpdateDraftTodo}
+              />
+            )
+          }
           mode={modalState.mode}
           onClose={handleCloseModal}
           onDelete={handleDeleteEvent}

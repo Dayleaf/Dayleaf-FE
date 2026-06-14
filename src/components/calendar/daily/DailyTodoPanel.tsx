@@ -125,62 +125,69 @@ export default function DailyTodoPanel({ date }: DailyTodoPanelProps) {
     setDraggingTodoId(null)
   }
 
-  const renderTodoItem = (todo: CalendarTodo, isPriorityItem = false) => (
-    <div
-      key={todo.id}
-      className={`${styles.dailyTodoItem} ${
-        draggingTodoId === todo.id ? styles.draggingTodoItem : ''
-      }`}
-      draggable={isPriorityItem}
-      onDragStart={(dragEvent) => {
-        if (!isPriorityItem) {
-          return
-        }
+  const renderTodoItem = (todo: CalendarTodo, isPriorityItem = false) => {
+    const category = todoCategories.find((todoCategory) => todoCategory.id === todo.categoryId)
 
-        dragEvent.dataTransfer.setData('text/plain', todo.id)
-        dragEvent.dataTransfer.effectAllowed = 'move'
-        setDraggingTodoId(todo.id)
-      }}
-      onDragEnd={() => setDraggingTodoId(null)}
-      onDragOver={(dragEvent) => {
-        if (isPriorityItem) {
-          dragEvent.preventDefault()
-        }
-      }}
-      onDrop={(dropEvent) => {
-        if (isPriorityItem) {
-          handleDropTodo(dropEvent, todo.id)
-        }
-      }}
-    >
-      {isPriorityItem ? (
-        <span className={styles.todoDragHandle} aria-hidden="true">
-          ::
-        </span>
-      ) : null}
-      <input
-        type="checkbox"
-        checked={todo.completed}
-        onChange={() => toggleTodo(todo.id)}
-        aria-label={`${todo.title} 완료`}
-      />
-      <button
-        type="button"
-        className={todo.completed ? styles.completedDailyTodo : undefined}
-        onClick={() => updateTodo(todo.id, { completed: !todo.completed })}
+    return (
+      <div
+        key={todo.id}
+        className={`${styles.dailyTodoItem} ${
+          draggingTodoId === todo.id ? styles.draggingTodoItem : ''
+        }`}
+        draggable={isPriorityItem}
+        onDragStart={(dragEvent) => {
+          if (!isPriorityItem) {
+            return
+          }
+
+          dragEvent.dataTransfer.setData('text/plain', todo.id)
+          dragEvent.dataTransfer.effectAllowed = 'move'
+          setDraggingTodoId(todo.id)
+        }}
+        onDragEnd={() => setDraggingTodoId(null)}
+        onDragOver={(dragEvent) => {
+          if (isPriorityItem) {
+            dragEvent.preventDefault()
+          }
+        }}
+        onDrop={(dropEvent) => {
+          if (isPriorityItem) {
+            handleDropTodo(dropEvent, todo.id)
+          }
+        }}
       >
-        {todo.title}
-      </button>
-      <button
-        type="button"
-        className={styles.todoRemoveButton}
-        onClick={() => deleteTodo(todo.id)}
-        aria-label={`${todo.title} 삭제`}
-      >
-        x
-      </button>
-    </div>
-  )
+        {isPriorityItem ? (
+          <span className={styles.todoDragHandle} aria-hidden="true">
+            ::
+          </span>
+        ) : null}
+        <input
+          type="checkbox"
+          checked={todo.completed}
+          onChange={() => toggleTodo(todo.id)}
+          aria-label={`${todo.title} 완료`}
+        />
+        <button
+          type="button"
+          className={todo.completed ? styles.completedDailyTodo : undefined}
+          onClick={() => updateTodo(todo.id, { completed: !todo.completed })}
+        >
+          {todo.title}
+        </button>
+        {isPriorityItem && category ? (
+          <span className={styles.todoCategoryTag}>#{category.label}</span>
+        ) : null}
+        <button
+          type="button"
+          className={styles.todoRemoveButton}
+          onClick={() => deleteTodo(todo.id)}
+          aria-label={`${todo.title} 삭제`}
+        >
+          x
+        </button>
+      </div>
+    )
+  }
 
   return (
     <section className={styles.dailyTodoPanel} aria-label={`${date} Todo`}>

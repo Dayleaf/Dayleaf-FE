@@ -6,6 +6,7 @@ export type CalendarCategory = {
   id: string
   label: string
   color: string
+  parentId?: string
 }
 
 export type WeekDayCode = 'MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU'

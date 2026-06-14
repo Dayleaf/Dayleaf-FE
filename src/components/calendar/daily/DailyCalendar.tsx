@@ -3,8 +3,6 @@
 import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
 import {
-  calendarCategories,
-  getCategoryColor,
   getTimeSlots,
   minutesToTime,
 } from '@/lib/calendar'
@@ -52,6 +50,8 @@ function getDailyDay(date: string): CalendarDay {
 
 export default function DailyCalendar({ date }: DailyCalendarProps) {
   const events = useCalendarStore((state) => state.events)
+  const nodes = useCalendarStore((state) => state.nodes)
+  const visibleNodeIds = useCalendarStore((state) => state.visibleNodeIds)
   const todos = useCalendarStore((state) => state.todos)
   const addEvent = useCalendarStore((state) => state.addEvent)
   const updateEvent = useCalendarStore((state) => state.updateEvent)
@@ -68,11 +68,27 @@ export default function DailyCalendar({ date }: DailyCalendarProps) {
   const selectedDate = useMemo(() => date ?? dayjs().format('YYYY-MM-DD'), [date])
   const day = useMemo(() => getDailyDay(selectedDate), [selectedDate])
   const timeSlots = useMemo(() => getTimeSlots(), [])
+  const visibleCategoryIds = useMemo(() => {
+    const visibleIdSet = new Set(visibleNodeIds)
+    const isNodeVisible = (nodeId: string): boolean => {
+      if (!visibleIdSet.has(nodeId)) {
+        return false
+      }
+
+      const node = nodes.find((candidate) => candidate.id === nodeId)
+
+      return node?.parentId ? isNodeVisible(node.parentId) : true
+    }
+
+    return new Set(nodes.filter((node) => isNodeVisible(node.id)).map((node) => node.id))
+  }, [nodes, visibleNodeIds])
   const dayEvents = useMemo(() => {
     return events
-      .filter((event) => event.date === day.key)
+      .filter((event) => event.date === day.key && visibleCategoryIds.has(event.categoryId))
       .sort((first, second) => first.startTime.localeCompare(second.startTime))
-  }, [day.key, events])
+  }, [day.key, events, visibleCategoryIds])
+  const getNodeColor = (nodeId: string) =>
+    nodes.find((node) => node.id === nodeId)?.color ?? 'var(--color-brand)'
   const editingEventTodos = useMemo(() => {
     if (modalState?.mode !== 'edit') {
       return []
@@ -239,14 +255,14 @@ export default function DailyCalendar({ date }: DailyCalendarProps) {
               ? modalState.event.id
               : `${modalState.date}-${modalState.startTime}`
           }
-          categories={calendarCategories}
+          categories={nodes}
           defaultDate={modalState.mode === 'edit' ? modalState.event.date : modalState.date}
           defaultEndTime={modalState.mode === 'edit' ? modalState.event.endTime : modalState.endTime}
           defaultStartTime={
             modalState.mode === 'edit' ? modalState.event.startTime : modalState.startTime
           }
           event={modalState.mode === 'edit' ? modalState.event : undefined}
-          getCategoryColor={getCategoryColor}
+          getCategoryColor={getNodeColor}
           linkedTodosSlot={
             modalState.mode === 'edit' ? (
               <EventTodoList

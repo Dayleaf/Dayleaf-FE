@@ -2,7 +2,7 @@
   height: 100%;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+  grid-template-columns: minmax(320px, 1fr) minmax(0, 1fr);
   overflow: hidden;
   background: var(--color-surface);
 }
@@ -371,6 +371,13 @@
   font-weight: 850;
   letter-spacing: 0;
   user-select: none;
+}
+
+.todoCategoryTag {
+  flex: 0 0 auto;
+  color: var(--color-brand-strong);
+  font-size: var(--font-size-xs);
+  font-weight: 800;
 }
 
 .dailyTodoItem input[type='checkbox'],
