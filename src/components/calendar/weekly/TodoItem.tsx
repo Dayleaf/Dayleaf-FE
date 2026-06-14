@@ -1,22 +1,28 @@
 import { useState, type FormEvent } from 'react'
-import type { CalendarTodo } from '@/types/calendar'
+import RoutineModal from '@/components/routine/RoutineModal'
+import type { CalendarCategory, CalendarTodo, CalendarTodoDraft } from '@/types/calendar'
 import styles from './weeklyCalendar.module.css'
 
 type TodoItemProps = {
+  categories: CalendarCategory[]
   todo: CalendarTodo
   onDeleteTodo: (todoId: string) => void
   onToggleTodo: (todoId: string) => void
-  onUpdateTodo: (todoId: string, title: string) => void
+  onUpdateTodo: (todoId: string, draft: Partial<CalendarTodoDraft>) => void
 }
 
 export default function TodoItem({
+  categories,
   todo,
   onDeleteTodo,
   onToggleTodo,
   onUpdateTodo,
 }: TodoItemProps) {
   const [isEditing, setIsEditing] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [title, setTitle] = useState(todo.title)
+  const [categoryId, setCategoryId] = useState(todo.categoryId ?? categories[0]?.id ?? '')
+  const [routineTodo, setRoutineTodo] = useState<CalendarTodo | null>(null)
 
   const handleSubmit = (submitEvent: FormEvent<HTMLFormElement>) => {
     submitEvent.preventDefault()
@@ -26,7 +32,7 @@ export default function TodoItem({
       return
     }
 
-    onUpdateTodo(todo.id, nextTitle)
+    onUpdateTodo(todo.id, { title: nextTitle, categoryId })
     setIsEditing(false)
   }
 
@@ -41,24 +47,66 @@ export default function TodoItem({
       {isEditing ? (
         <form className={styles.todoEditForm} onSubmit={handleSubmit}>
           <input value={title} onChange={(changeEvent) => setTitle(changeEvent.target.value)} />
+          <select
+            value={categoryId}
+            onChange={(changeEvent) => setCategoryId(changeEvent.target.value)}
+            aria-label={`${todo.title} 카테고리 수정`}
+          >
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.label}
+              </option>
+            ))}
+          </select>
+          <button type="submit">저장</button>
         </form>
       ) : (
         <button
           className={`${styles.todoTitle} ${todo.completed ? styles.completedTodo : ''}`}
           type="button"
-          onClick={() => setIsEditing(true)}
+          onClick={() => onToggleTodo(todo.id)}
         >
           {todo.title}
         </button>
       )}
-      <button
-        className={styles.todoDeleteButton}
-        type="button"
-        aria-label={`${todo.title} 삭제`}
-        onClick={() => onDeleteTodo(todo.id)}
-      >
-        x
-      </button>
+      {isEditing ? null : (
+        <div className={styles.todoMoreMenuWrap}>
+          <button
+            className={styles.todoMoreButton}
+            type="button"
+            aria-label={`${todo.title} 더보기`}
+            onClick={() => setIsMenuOpen((isOpen) => !isOpen)}
+          >
+            ⋮
+          </button>
+          {isMenuOpen ? (
+            <div className={styles.todoActionMenu}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditing(true)
+                  setIsMenuOpen(false)
+                }}
+              >
+                수정
+              </button>
+              <button type="button" onClick={() => onDeleteTodo(todo.id)}>
+                삭제
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setRoutineTodo(todo)
+                  setIsMenuOpen(false)
+                }}
+              >
+                루틴화
+              </button>
+            </div>
+          ) : null}
+        </div>
+      )}
+      {routineTodo ? <RoutineModal todo={routineTodo} onClose={() => setRoutineTodo(null)} /> : null}
     </div>
   )
 }

@@ -7,7 +7,12 @@ import type { ArchivedBook, BookshelfPot } from '@/types/main'
 // 오늘 날짜. 서버 컴포넌트에서 사용하므로 서버 기준 시각을 사용한다.
 // 'YYYY-MM-DD' 형태로 반환.
 export function getTodayIso(): string {
-  return new Date().toISOString().slice(0, 10)
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
 }
 
 // 'YYYY-MM-DD' → '2026. 03. 08. 일요일' 형태 변환 (메인 페이지 날짜 헤더용)

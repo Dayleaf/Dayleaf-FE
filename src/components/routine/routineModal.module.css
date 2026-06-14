@@ -1,0 +1,111 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  background: var(--color-overlay);
+  padding: var(--space-6);
+}
+
+.modal {
+  width: min(460px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-popover);
+  padding: var(--space-6);
+}
+
+.header,
+.dateGrid,
+.actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.header {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.header p,
+.header h2 {
+  margin: 0;
+}
+
+.header p,
+.modal label span {
+  color: var(--color-brand-strong);
+  font-size: var(--font-size-xs);
+  font-weight: 850;
+}
+
+.header h2 {
+  margin-top: var(--space-1);
+  color: var(--color-text);
+  font-size: var(--font-size-lg);
+  font-weight: 850;
+}
+
+.header button {
+  width: var(--space-10);
+  height: var(--space-10);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+  font-weight: 850;
+}
+
+.modal label {
+  min-width: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.modal input,
+.modal select {
+  height: calc(var(--space-10) + var(--space-1));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 0 var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 650;
+}
+
+.actions {
+  justify-content: flex-end;
+}
+
+.actions button {
+  min-height: var(--space-10);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  padding: 0 var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+}
+
+.actions button:last-child {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+  color: var(--color-surface);
+}
+
+@media (max-width: 640px) {
+  .dateGrid,
+  .actions {
+    flex-direction: column;
+  }
+}

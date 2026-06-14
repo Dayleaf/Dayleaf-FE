@@ -6,6 +6,7 @@ export type CalendarCategory = {
   id: string
   label: string
   color: string
+  parentId?: string
 }
 
 export type WeekDayCode = 'MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU'
@@ -42,8 +43,32 @@ export type CalendarTodo = {
   id: string
   title: string
   completed: boolean
+  date?: string
+  categoryId?: string
+  nodeId?: string
+  eventId?: string
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+  priorityOrder?: number
+  recurrenceRule?: RecurrenceRule
   createdAt: string
 }
+
+export type RoutineFrequency = 'DAILY' | 'WEEKLY' | 'WEEKDAYS' | 'MONTHLY'
+
+export type CalendarRoutine = {
+  id: string
+  title: string
+  todoId?: string
+  categoryId?: string
+  frequency: RoutineFrequency
+  startDate: string
+  dueDate: string
+  completedAt?: string
+  completionDates: string[]
+  createdAt: string
+}
+
+export type CalendarRoutineDraft = Omit<CalendarRoutine, 'id' | 'completionDates' | 'createdAt'>
 
 export type CalendarDay = {
   key: string
@@ -54,3 +79,5 @@ export type CalendarDay = {
 }
 
 export type CalendarEventDraft = Omit<CalendarEvent, 'id'>
+
+export type CalendarTodoDraft = Omit<CalendarTodo, 'id'>

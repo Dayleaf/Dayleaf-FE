@@ -1,7 +1,11 @@
-export default function DailyPage({ params }: { params: { date: string } }) {
-  return (
-    <main>
-      <h1>{params.date} 데일리</h1>
-    </main>
-  )
+import DailyCalendar from '@/components/calendar/daily/DailyCalendar'
+
+export default async function DailyPage({
+  params,
+}: {
+  params: Promise<{ date: string }>
+}) {
+  const { date } = await params
+
+  return <DailyCalendar date={date} />
 }

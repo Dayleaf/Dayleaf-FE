@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import type { CalendarCategory, CalendarEvent, CalendarEventDraft } from '@/types/calendar'
 import styles from './monthlyCalendar.module.css'
 
@@ -8,18 +8,21 @@ type EventModalProps = {
   event?: CalendarEvent
   getCategoryColor: (categoryId: string) => string
   mode: 'create' | 'edit'
+  linkedTodosSlot?: ReactNode
   onClose: () => void
   onDelete: () => void
   onSave: (draft: CalendarEventDraft) => void
 }
 
 const defaultCategoryId = 'work'
+const noGroupCategoryId = ''
 
 export default function EventModal({
   categories,
   defaultDate,
   event,
   getCategoryColor,
+  linkedTodosSlot,
   mode,
   onClose,
   onDelete,
@@ -29,7 +32,7 @@ export default function EventModal({
   const [date, setDate] = useState(event?.date ?? defaultDate ?? '')
   const [startTime, setStartTime] = useState(event?.startTime ?? '09:00')
   const [endTime, setEndTime] = useState(event?.endTime ?? '10:00')
-  const [categoryId, setCategoryId] = useState(event?.categoryId ?? defaultCategoryId)
+  const [categoryId, setCategoryId] = useState(event?.categoryId ?? categories[0]?.id ?? defaultCategoryId)
 
   const handleSubmit = (submitEvent: FormEvent<HTMLFormElement>) => {
     submitEvent.preventDefault()
@@ -40,7 +43,7 @@ export default function EventModal({
       startTime,
       endTime,
       categoryId,
-      color: getCategoryColor(categoryId),
+      color: categoryId ? getCategoryColor(categoryId) : 'var(--color-brand)',
     })
   }
 
@@ -98,11 +101,12 @@ export default function EventModal({
         </div>
 
         <label className={styles.field}>
-          <span>카테고리</span>
+          <span>그룹</span>
           <select
             value={categoryId}
             onChange={(changeEvent) => setCategoryId(changeEvent.target.value)}
           >
+            <option value={noGroupCategoryId}>그룹 없음</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.label}
@@ -110,6 +114,8 @@ export default function EventModal({
             ))}
           </select>
         </label>
+
+        {linkedTodosSlot}
 
         <div className={styles.modalActions}>
           {mode === 'edit' ? (

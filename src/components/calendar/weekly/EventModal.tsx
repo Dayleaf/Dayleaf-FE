@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import type {
   CalendarCategory,
   CalendarEvent,
@@ -16,12 +16,14 @@ type EventModalProps = {
   event?: CalendarEvent
   getCategoryColor: (categoryId: string) => string
   mode: 'create' | 'edit'
+  linkedTodosSlot?: ReactNode
   onClose: () => void
   onDelete: () => void
   onSave: (draft: CalendarEventDraft) => void
 }
 
 const defaultCategoryId = 'work'
+const noGroupCategoryId = ''
 
 const recurrenceOptions: Array<{ label: string; value: RecurrenceFrequency }> = [
   { label: '반복 안 함', value: 'NONE' },
@@ -51,17 +53,17 @@ export default function EventModal({
   defaultStartTime,
   event,
   getCategoryColor,
+  linkedTodosSlot,
   mode,
   onClose,
   onDelete,
   onSave,
 }: EventModalProps) {
   const [title, setTitle] = useState(event?.title ?? '')
-  const [description, setDescription] = useState(event?.description ?? '')
   const [date, setDate] = useState(event?.date ?? defaultDate)
   const [startTime, setStartTime] = useState(event?.startTime ?? defaultStartTime)
   const [endTime, setEndTime] = useState(event?.endTime ?? defaultEndTime)
-  const [categoryId, setCategoryId] = useState(event?.categoryId ?? defaultCategoryId)
+  const [categoryId, setCategoryId] = useState(event?.categoryId ?? categories[0]?.id ?? defaultCategoryId)
   const [recurrenceFrequency, setRecurrenceFrequency] = useState<RecurrenceFrequency>(
     event?.recurrenceRule?.frequency ?? 'NONE',
   )
@@ -71,12 +73,11 @@ export default function EventModal({
 
     onSave({
       title: title.trim() || '제목 없는 일정',
-      description: description.trim(),
       date,
       startTime,
       endTime,
       categoryId,
-      color: getCategoryColor(categoryId),
+      color: categoryId ? getCategoryColor(categoryId) : 'var(--color-brand)',
       recurrenceRule: getRecurrenceRule(recurrenceFrequency),
     })
   }
@@ -91,7 +92,7 @@ export default function EventModal({
         <div className={styles.modalHeader}>
           <div>
             <p className={styles.modalEyebrow}>{mode === 'edit' ? '일정 수정' : '일정 추가'}</p>
-            <h2>{mode === 'edit' ? '주간 일정을 수정합니다' : '주간 일정을 만듭니다'}</h2>
+            <h2>{mode === 'edit' ? '일정을 수정합니다' : '일정을 만듭니다'}</h2>
           </div>
           <button className={styles.closeButton} type="button" onClick={onClose} aria-label="닫기">
             x
@@ -110,15 +111,6 @@ export default function EventModal({
             value={date}
             onChange={(changeEvent) => setDate(changeEvent.target.value)}
             required
-          />
-        </label>
-
-        <label className={styles.field}>
-          <span>설명</span>
-          <textarea
-            value={description}
-            onChange={(changeEvent) => setDescription(changeEvent.target.value)}
-            rows={3}
           />
         </label>
 
@@ -144,11 +136,12 @@ export default function EventModal({
         </div>
 
         <label className={styles.field}>
-          <span>카테고리</span>
+          <span>그룹</span>
           <select
             value={categoryId}
             onChange={(changeEvent) => setCategoryId(changeEvent.target.value)}
           >
+            <option value={noGroupCategoryId}>그룹 없음</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.label}
@@ -172,6 +165,8 @@ export default function EventModal({
             ))}
           </select>
         </label>
+
+        {linkedTodosSlot}
 
         <div className={styles.modalActions}>
           {mode === 'edit' ? (

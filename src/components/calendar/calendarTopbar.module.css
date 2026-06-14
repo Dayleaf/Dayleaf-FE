@@ -28,10 +28,12 @@
 
 .todayButton,
 .iconButton,
-.avatarButton,
 .viewLink,
 .todoButton {
   height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text);
@@ -57,7 +59,6 @@
 
 .todayButton:hover,
 .iconButton:hover,
-.avatarButton:hover,
 .viewLink:hover {
   background: var(--color-hover);
   border-color: var(--color-brand);
@@ -65,6 +66,14 @@
 
 .monthControls {
   gap: 6px;
+}
+
+.dateTitleGroup {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
 }
 
 .currentMonth {
@@ -76,37 +85,132 @@
   white-space: nowrap;
 }
 
-.search {
-  width: min(260px, 24vw);
-  height: 38px;
+.datePickerWrap {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-muted);
+}
+
+.datePickerButton {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
   color: var(--color-text-muted);
 }
 
-.searchIcon {
-  font-size: 11px;
-  font-weight: 650;
-  color: var(--color-text-subtle);
+.datePickerPanel {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: var(--z-modal);
+  width: 288px;
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-popover);
 }
 
-.search input {
-  width: 100%;
-  min-width: 64px;
-  border: 0;
-  outline: 0;
-  background: transparent;
+.datePickerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.datePickerHeader strong {
   color: var(--color-text);
-  font-size: 14px;
+  font-size: var(--font-size-base);
+  font-weight: 750;
 }
 
-.search input::placeholder {
+.datePickerNav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.datePickerNavButton {
+  min-width: 28px;
+  height: 30px;
+  padding: 0 var(--space-1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-weight: 750;
+}
+
+.datePickerNavButton:hover {
+  background: var(--color-hover);
+  color: var(--color-text);
+}
+
+.datePickerWeekDays,
+.datePickerCalendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.datePickerWeekDays {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 750;
+  text-align: center;
+}
+
+.datePickerWeekDays span {
+  display: grid;
+  place-items: center;
+  height: 28px;
+}
+
+.datePickerCalendar {
+  row-gap: var(--space-1);
+}
+
+.datePickerDay {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-self: center;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: 650;
+}
+
+.datePickerDay:hover {
+  border-color: var(--color-brand);
+  background: var(--color-hover);
+  color: var(--color-brand-strong);
+}
+
+.outsideDatePickerDay {
   color: var(--color-text-subtle);
+}
+
+.todayDatePickerDay {
+  border-color: var(--color-brand);
+  color: var(--color-brand-strong);
+}
+
+.selectedDatePickerDay {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+  color: var(--color-surface);
+}
+
+.selectedDatePickerDay:hover {
+  background: var(--color-brand-strong);
+  color: var(--color-surface);
 }
 
 .viewSwitcher {
@@ -148,22 +252,6 @@
   border-color: var(--color-brand);
   background: var(--color-brand-soft);
   color: var(--color-brand-strong);
-}
-
-.avatarButton {
-  width: 36px;
-  padding: 0;
-  border-radius: 50%;
-  background: var(--color-brand-soft);
-  color: var(--color-brand-strong);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-@media (max-width: 1040px) {
-  .search {
-    display: none;
-  }
 }
 
 @media (max-width: 760px) {

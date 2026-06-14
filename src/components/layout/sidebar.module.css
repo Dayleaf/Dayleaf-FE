@@ -14,41 +14,35 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  color: var(--color-text);
   font-weight: 800;
   font-size: 18px;
+  text-decoration: none;
 }
 
 .logoMark {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-md);
-  background: var(--color-brand);
-  color: #ffffff;
-  font-size: 15px;
-  box-shadow: var(--shadow-sm);
+  width: 26px;
+  height: 25px;
+  display: block;
 }
 
-.createButton {
-  height: 42px;
-  border: 0;
-  border-radius: var(--radius-md);
-  background: var(--color-brand);
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 750;
-  box-shadow: var(--shadow-sm);
-}
-
-.createButton:hover {
-  background: var(--color-brand-strong);
+.logoMark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
 }
 
 .nav {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.navItemGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
 .navLink {
@@ -92,25 +86,156 @@
   gap: 12px;
 }
 
-.miniActions {
-  display: flex;
-  gap: 4px;
+.nodeSection {
+  padding: 0 var(--space-2) var(--space-2) var(--space-3);
 }
 
-.miniActions button {
-  width: 26px;
-  height: 26px;
-  border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
+.nodeTree,
+.scheduleTree,
+.todoTree {
+  display: flex;
+  flex-direction: column;
+}
+
+.nodeTree {
+  gap: var(--space-2);
+}
+
+.nodeTreeItem,
+.scheduleTreeItem {
   color: var(--color-text-muted);
-  font-size: 12px;
+}
+
+.nodeTreeSummary,
+.scheduleTreeItem summary {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  list-style: none;
+  font-size: var(--font-size-sm);
+  font-weight: 750;
+}
+
+.nodeTreeSummary::-webkit-details-marker,
+.scheduleTreeItem summary::-webkit-details-marker {
+  display: none;
+}
+
+.nodeTreeSummary::before,
+.scheduleTreeItem summary::before {
+  content: '>';
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-xs);
+}
+
+.nodeTreeItem[open] > .nodeTreeSummary::before,
+.scheduleTreeItem[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.nodeTreeSummary:hover,
+.scheduleTreeItem summary:hover {
+  background: var(--color-hover);
+  color: var(--color-text);
+}
+
+.nodeTreeSummary input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--color-brand);
+}
+
+.scheduleTree {
+  gap: var(--space-1);
+  margin-left: var(--space-6);
+  padding: var(--space-1) 0;
+}
+
+.childNodeTree {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-left: var(--space-5);
+  padding: var(--space-1) 0 var(--space-1) var(--space-2);
+  border-left: 2px solid var(--color-brand-soft);
+  background: var(--color-cell-muted);
+  border-radius: var(--radius-sm);
+}
+
+.childNodeTree .nodeTreeSummary {
+  padding-left: var(--space-1);
+  color: var(--color-brand-strong);
+}
+
+.childNodeTree .scheduleTree {
+  margin-left: var(--space-4);
+}
+
+.scheduleTreeItem summary {
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-right: var(--space-1);
+  font-size: var(--font-size-xs);
+}
+
+.scheduleTreeItem summary span,
+.scheduleTreeButton {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scheduleTreeButton {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+  font-size: var(--font-size-xs);
+  font-weight: 750;
+}
+
+.scheduleTreeItem time {
+  flex: 0 0 auto;
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-xs);
   font-weight: 700;
 }
 
-.miniActions button:hover {
-  border-color: var(--color-brand);
-  background: var(--color-hover);
+.todoTree {
+  gap: var(--space-1);
+  margin-left: var(--space-5);
+  padding: var(--space-1) 0 var(--space-2);
+}
+
+.todoTreeItem,
+.emptyTreeItem {
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-xs);
+  font-weight: 650;
+}
+
+.todoTreeItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.todoTreeItem input {
+  width: 13px;
+  height: 13px;
+  accent-color: var(--color-brand);
+}
+
+.emptyTreeItem {
+  display: block;
+  margin-left: var(--space-6);
+  padding: var(--space-1) 0;
 }
 
 .miniCalendar {

@@ -93,15 +93,21 @@
 
 .todoForm,
 .todoEditForm {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: var(--space-2);
 }
 
-.todoForm input,
-.todoEditForm input {
-  min-width: 0;
+.todoEditForm {
   flex: 1;
+}
+
+.todoForm input,
+.todoForm select,
+.todoEditForm input,
+.todoEditForm select {
+  min-width: 0;
   height: var(--space-8);
   border: 0;
   background: transparent;
@@ -110,6 +116,19 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   outline: 0;
+}
+
+.todoForm input:not([type]),
+.todoEditForm input {
+  flex: 1;
+}
+
+.todoForm select,
+.todoEditForm select {
+  flex: 0 0 46px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 650;
 }
 
 .todoForm input[type='checkbox'] {
@@ -203,24 +222,26 @@
   text-decoration: line-through;
 }
 
-.todoDeleteButton {
+.todoMoreButton {
   width: var(--space-6);
-  height: var(--space-6);
+  height: var(--space-7);
   display: grid;
   place-items: center;
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--color-text-subtle);
+  color: var(--color-text);
   padding: 0;
-  font-size: var(--font-size-xs);
-  font-weight: 800;
-  opacity: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 650;
+  line-height: 1;
 }
 
+.todoEditForm button,
 .todoSubmitButton {
   width: var(--space-6);
   height: var(--space-6);
+  flex: 0 0 var(--space-6);
   display: grid;
   place-items: center;
   border: 1px solid var(--color-brand);
@@ -228,13 +249,18 @@
   background: var(--color-brand-soft);
   color: var(--color-brand-strong);
   padding: 0;
+  overflow: hidden;
+  font-size: 0;
+  font-weight: 800;
 }
 
+.todoEditForm button:hover,
 .todoSubmitButton:hover {
   border-color: var(--color-brand-strong);
   background: var(--color-active);
 }
 
+.todoEditForm button::before,
 .todoSubmitButton::before {
   content: '';
   width: calc(var(--space-3) - 2px);
@@ -244,14 +270,47 @@
   transform: translateY(-1px) rotate(-45deg);
 }
 
-.todoItem:hover .todoDeleteButton,
-.todoDeleteButton:focus {
-  opacity: 1;
+.todoMoreMenuWrap {
+  position: relative;
+  flex: 0 0 auto;
 }
 
-.todoDeleteButton:hover {
+.todoActionMenu {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 8;
+  min-width: 92px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-popover);
+  padding: var(--space-1);
+}
+
+.todoActionMenu button {
+  min-height: var(--space-8);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  padding: 0 var(--space-2);
+  text-align: left;
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+}
+
+.todoActionMenu button:hover {
   background: var(--color-hover);
-  color: var(--color-important);
+  color: var(--color-text);
+}
+
+.todoMoreButton:hover {
+  background: var(--color-brand-soft);
+  color: var(--color-brand-strong);
 }
 
 .weekGrid {
