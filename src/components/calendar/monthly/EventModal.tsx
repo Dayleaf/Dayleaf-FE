@@ -15,6 +15,7 @@ type EventModalProps = {
 }
 
 const defaultCategoryId = 'work'
+const noGroupCategoryId = ''
 
 export default function EventModal({
   categories,
@@ -42,7 +43,7 @@ export default function EventModal({
       startTime,
       endTime,
       categoryId,
-      color: getCategoryColor(categoryId),
+      color: categoryId ? getCategoryColor(categoryId) : 'var(--color-brand)',
     })
   }
 
@@ -105,6 +106,7 @@ export default function EventModal({
             value={categoryId}
             onChange={(changeEvent) => setCategoryId(changeEvent.target.value)}
           >
+            <option value={noGroupCategoryId}>그룹 없음</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.label}

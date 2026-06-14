@@ -14,8 +14,10 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  color: var(--color-text);
   font-weight: 800;
   font-size: 18px;
+  text-decoration: none;
 }
 
 .logoMark {

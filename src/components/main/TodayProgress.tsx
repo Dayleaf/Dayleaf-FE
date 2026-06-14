@@ -1,50 +1,104 @@
-// src/components/main/TodayProgress.tsx
-//
-// 오늘 기준 루틴+투두 진행률 패널.
-//
-// 설계 의도:
-//   - 체크박스 토글에 로컬 상태가 필요하므로 이 컴포넌트만 'use client'로 분리한다.
-//   - ProgressItem의 source 필드로 루틴(ROUTINE)과 투두(TODO)를 구분해 태그 표시.
-//   - BE 연동 후에는 done 상태 토글 시 TodoExecution API를 호출하는 로직을 추가한다.
-//     (현재는 로컬 상태만 변경)
-
 'use client'
 
-import { useMemo, useState } from 'react'
-import type { ProgressItem } from '@/types/main'
+import dayjs from 'dayjs'
+import { useMemo } from 'react'
+import { useCalendarStore } from '@/stores/calendarStore'
+import type { CalendarRoutine, CalendarTodo } from '@/types/calendar'
 import styles from './main.module.css'
 
 type TodayProgressProps = {
-  items: ProgressItem[]
+  date: string
 }
 
-// BE의 SourceType(MANUAL | SCHEDULE | REPEAT)에서 파생.
-// 표시용 한국어 라벨.
-const SOURCE_LABEL: Record<ProgressItem['source'], string> = {
+type TodayProgressItem =
+  | {
+      id: string
+      title: string
+      done: boolean
+      source: 'ROUTINE'
+      routineId: string
+    }
+  | {
+      id: string
+      title: string
+      done: boolean
+      source: 'TODO'
+      todoId: string
+    }
+
+const SOURCE_LABEL: Record<TodayProgressItem['source'], string> = {
   ROUTINE: '루틴',
   TODO: '투두',
 }
 
-export default function TodayProgress({ items }: TodayProgressProps) {
-  const [progress, setProgress] = useState<ProgressItem[]>(items)
+function getTodoDate(todo: CalendarTodo) {
+  return todo.date ?? todo.createdAt
+}
 
-  const { doneCount, rate } = useMemo(() => {
-    const done = progress.filter((item: ProgressItem) => item.done).length
-    const total = progress.length
-    return {
-      doneCount: done,
-      rate: total === 0 ? 0 : Math.round((done / total) * 100),
+function isRoutineDueToday(routine: CalendarRoutine, date: string) {
+  const targetDate = dayjs(date)
+  const startDate = dayjs(routine.startDate)
+  const dueDate = dayjs(routine.completedAt ?? routine.dueDate)
+
+  if (targetDate.isBefore(startDate, 'day') || targetDate.isAfter(dueDate, 'day')) {
+    return false
+  }
+
+  if (routine.frequency === 'DAILY') {
+    return true
+  }
+
+  if (routine.frequency === 'WEEKDAYS') {
+    return [1, 2, 3, 4, 5].includes(targetDate.day())
+  }
+
+  if (routine.frequency === 'MONTHLY') {
+    return targetDate.date() === startDate.date()
+  }
+
+  return targetDate.diff(startDate, 'day') % 7 === 0
+}
+
+export default function TodayProgress({ date }: TodayProgressProps) {
+  const todos = useCalendarStore((state) => state.todos)
+  const routines = useCalendarStore((state) => state.routines)
+  const updateTodo = useCalendarStore((state) => state.updateTodo)
+  const toggleRoutineDate = useCalendarStore((state) => state.toggleRoutineDate)
+
+  const progress = useMemo<TodayProgressItem[]>(() => {
+    const routineItems: TodayProgressItem[] = routines
+      .filter((routine) => isRoutineDueToday(routine, date))
+      .map((routine) => ({
+        id: `routine-${routine.id}`,
+        title: routine.title,
+        done: routine.completionDates.includes(date),
+        source: 'ROUTINE',
+        routineId: routine.id,
+      }))
+
+    const todoItems: TodayProgressItem[] = todos
+      .filter((todo) => getTodoDate(todo) === date)
+      .map((todo) => ({
+        id: `todo-${todo.id}`,
+        title: todo.title,
+        done: todo.completed,
+        source: 'TODO',
+        todoId: todo.id,
+      }))
+
+    return [...routineItems, ...todoItems]
+  }, [date, routines, todos])
+
+  const doneCount = progress.filter((item) => item.done).length
+  const rate = progress.length === 0 ? 0 : Math.round((doneCount / progress.length) * 100)
+
+  const toggleItem = (item: TodayProgressItem) => {
+    if (item.source === 'ROUTINE') {
+      toggleRoutineDate(item.routineId, date)
+      return
     }
-  }, [progress])
 
-  const toggleItem = (id: string) => {
-    setProgress((current: ProgressItem[]) =>
-      current.map((item: ProgressItem) =>
-        item.id === id ? { ...item, done: !item.done } : item
-      )
-    )
-    // TODO: BE TodoExecution API 연동 후 완료 상태 서버 동기화 추가
-    //   ex) await apiClient.patch(`/api/todo-executions/${id}/toggle`)
+    updateTodo(item.todoId, { completed: !item.done })
   }
 
   return (
@@ -65,32 +119,36 @@ export default function TodayProgress({ items }: TodayProgressProps) {
         <span className={styles.progressFill} style={{ width: `${rate}%` }} />
       </div>
 
-      <div className={styles.progressList}>
-        {progress.map((item: ProgressItem) => (
-          <button
-            key={item.id}
-            type="button"
-            className={styles.progressItem}
-            onClick={() => toggleItem(item.id)}
-            aria-pressed={item.done}
-          >
-            <span
-              className={`${styles.checkbox} ${item.done ? styles.checkboxChecked : ''}`}
-              aria-hidden="true"
+      {progress.length === 0 ? (
+        <p className={styles.emptyText}>오늘은 진행할 루틴과 Todo가 없어요.</p>
+      ) : (
+        <div className={styles.progressList}>
+          {progress.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={styles.progressItem}
+              onClick={() => toggleItem(item)}
+              aria-pressed={item.done}
             >
-              {item.done ? '✓' : ''}
-            </span>
-            <span
-              className={`${styles.progressItemTitle} ${item.done ? styles.progressItemDone : ''}`}
-            >
-              {item.title}
-            </span>
-            <span className={styles.sourceTag}>
-              {SOURCE_LABEL[item.source]}
-            </span>
-          </button>
-        ))}
-      </div>
+              <span
+                className={`${styles.checkbox} ${item.done ? styles.checkboxChecked : ''}`}
+                aria-hidden="true"
+              >
+                {item.done ? '✓' : ''}
+              </span>
+              <span
+                className={`${styles.progressItemTitle} ${
+                  item.done ? styles.progressItemDone : ''
+                }`}
+              >
+                {item.title}
+              </span>
+              <span className={styles.sourceTag}>{SOURCE_LABEL[item.source]}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </section>
   )
 }

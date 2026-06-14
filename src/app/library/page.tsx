@@ -127,6 +127,7 @@ export default function LibraryPage() {
   const [eventModal, setEventModal] = useState<LibraryEventModalState>(null)
   const [draftTodos, setDraftTodos] = useState<CalendarTodo[]>([])
   const [creatingTodoEventId, setCreatingTodoEventId] = useState<string | null>(null)
+  const [creatingTodoNodeId, setCreatingTodoNodeId] = useState<string | null>(null)
   const [newTodoTitle, setNewTodoTitle] = useState('')
   const [newTodoCategoryId, setNewTodoCategoryId] = useState(todoCategories[0]?.id ?? '')
   const [openTodoMenuId, setOpenTodoMenuId] = useState<string | null>(null)
@@ -150,6 +151,9 @@ export default function LibraryPage() {
         .sort((first, second) =>
           `${first.date} ${first.startTime}`.localeCompare(`${second.date} ${second.startTime}`),
         )
+    : []
+  const selectedNodeTodos = selectedNode
+    ? todos.filter((todo) => todo.nodeId === selectedNode.id && !todo.eventId)
     : []
   const eventModalEvent = eventModal?.mode === 'edit' ? eventModal.event : null
   const libraryEventCategories =
@@ -304,6 +308,25 @@ export default function LibraryPage() {
     })
     setNewTodoTitle('')
     setCreatingTodoEventId(null)
+  }
+  const handleAddNodeTodo = (nodeId: string) => {
+    const title = newTodoTitle.trim()
+
+    if (!title) {
+      return
+    }
+
+    addTodo({
+      title,
+      completed: false,
+      date: todayKey,
+      categoryId: newTodoCategoryId || todoCategories[0]?.id,
+      nodeId,
+      priority: 'MEDIUM',
+      createdAt: todayKey,
+    })
+    setNewTodoTitle('')
+    setCreatingTodoNodeId(null)
   }
   const handleStartEditTodo = (todoId: string, title: string, categoryId?: string) => {
     setEditingTodoId(todoId)
@@ -583,10 +606,154 @@ export default function LibraryPage() {
                   <button type="button" onClick={() => setIsChildNodeModalOpen(true)}>
                     하위 그룹 생성
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCreatingTodoNodeId(selectedNode.id)
+                      setNewTodoCategoryId(todoCategories[0]?.id ?? '')
+                      setNewTodoTitle('')
+                    }}
+                  >
+                    Todo 생성
+                  </button>
                   <button type="button" onClick={() => handleOpenCreateEvent(selectedNode.id)}>
                     일정 생성
                   </button>
                 </div>
+              </div>
+              <div className={styles.childNodeTodoBlock}>
+                <span className={styles.childNodeTodoTitle}>{selectedNode.label} Todo</span>
+                {selectedNodeTodos.length > 0 ? (
+                  selectedNodeTodos.map((todo) => {
+                    const category = todoCategories.find(
+                      (todoCategory) => todoCategory.id === todo.categoryId,
+                    )
+
+                    return (
+                      <div
+                        key={todo.id}
+                        className={`${styles.scheduleTodoItem} ${
+                          editingTodoId === todo.id ? styles.editingScheduleTodoItem : ''
+                        }`}
+                      >
+                        {editingTodoId === todo.id ? (
+                          <div className={styles.scheduleTodoEditForm}>
+                            <input
+                              value={editingTodoTitle}
+                              onChange={(changeEvent) =>
+                                setEditingTodoTitle(changeEvent.target.value)
+                              }
+                              aria-label={`${todo.title} 수정`}
+                            />
+                            <select
+                              value={editingTodoCategoryId}
+                              onChange={(changeEvent) =>
+                                setEditingTodoCategoryId(changeEvent.target.value)
+                              }
+                              aria-label={`${todo.title} Todo 카테고리`}
+                            >
+                              {todoCategories.map((todoCategory) => (
+                                <option key={todoCategory.id} value={todoCategory.id}>
+                                  #{todoCategory.label}
+                                </option>
+                              ))}
+                            </select>
+                            <button type="button" onClick={() => handleSaveTodo(todo.id)}>
+                              저장
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <label>
+                              <input
+                                type="checkbox"
+                                checked={todo.completed}
+                                onChange={() => toggleTodo(todo.id)}
+                              />
+                              <span>{todo.title}</span>
+                            </label>
+                            {category ? (
+                              <span className={styles.todoCategoryTag}>#{category.label}</span>
+                            ) : null}
+                            <div className={styles.todoMoreMenuWrap} data-todo-menu>
+                              <button
+                                type="button"
+                                className={styles.todoMoreButton}
+                                onClick={() =>
+                                  setOpenTodoMenuId((currentTodoId) =>
+                                    currentTodoId === todo.id ? null : todo.id,
+                                  )
+                                }
+                                aria-label={`${todo.title} 더보기`}
+                              >
+                                ⋮
+                              </button>
+                              {openTodoMenuId === todo.id ? (
+                                <div className={styles.todoActionMenu}>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleStartEditTodo(todo.id, todo.title, todo.categoryId)
+                                    }
+                                  >
+                                    수정
+                                  </button>
+                                  <button type="button" onClick={() => deleteTodo(todo.id)}>
+                                    삭제
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setRoutineTodo(todo)
+                                      setOpenTodoMenuId(null)
+                                    }}
+                                  >
+                                    루틴화
+                                  </button>
+                                </div>
+                              ) : null}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )
+                  })
+                ) : (
+                  <span className={styles.emptyDetail}>이 그룹에 속한 Todo가 없습니다</span>
+                )}
+                {creatingTodoNodeId === selectedNode.id ? (
+                  <div className={styles.scheduleTodoCreateForm}>
+                    <input
+                      value={newTodoTitle}
+                      onChange={(changeEvent) => setNewTodoTitle(changeEvent.target.value)}
+                      placeholder="새 Todo"
+                      aria-label={`${selectedNode.label} 새 Todo`}
+                    />
+                    <select
+                      value={newTodoCategoryId}
+                      onChange={(changeEvent) => setNewTodoCategoryId(changeEvent.target.value)}
+                      aria-label="새 Todo 카테고리"
+                    >
+                      {todoCategories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          #{category.label}
+                        </option>
+                      ))}
+                    </select>
+                    <button type="button" onClick={() => handleAddNodeTodo(selectedNode.id)}>
+                      추가
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCreatingTodoNodeId(null)
+                        setNewTodoTitle('')
+                      }}
+                    >
+                      취소
+                    </button>
+                  </div>
+                ) : null}
               </div>
               <div className={styles.listSectionHeader}>
                 <h3>상위 그룹 일정</h3>
@@ -776,6 +943,9 @@ export default function LibraryPage() {
                             `${second.date} ${second.startTime}`,
                           ),
                         )
+                      const childTodos = todos.filter(
+                        (todo) => todo.nodeId === childNode.id && !todo.eventId,
+                      )
 
                       return (
                         <details
@@ -792,13 +962,169 @@ export default function LibraryPage() {
                           <summary>
                             <span className={styles.nodeColor} style={{ background: childNode.color }} />
                             <span>{childNode.label}</span>
-                            <small>{childEvents.length}개 일정</small>
+                            <small>
+                              {childEvents.length}개 일정 · {childTodos.length}개 Todo
+                            </small>
                           </summary>
                           <div className={styles.childNodeScheduleHeader}>
                             <span>{childNode.label} 일정</span>
-                            <button type="button" onClick={() => handleOpenCreateEvent(childNode.id)}>
-                              일정 생성
-                            </button>
+                            <div className={styles.childNodeHeaderActions}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCreatingTodoNodeId(childNode.id)
+                                  setNewTodoCategoryId(todoCategories[0]?.id ?? '')
+                                  setNewTodoTitle('')
+                                }}
+                              >
+                                Todo 생성
+                              </button>
+                              <button type="button" onClick={() => handleOpenCreateEvent(childNode.id)}>
+                                일정 생성
+                              </button>
+                            </div>
+                          </div>
+                          <div className={styles.childNodeTodoBlock}>
+                            <span className={styles.childNodeTodoTitle}>{childNode.label} Todo</span>
+                            {childTodos.length > 0 ? (
+                              childTodos.map((todo) => {
+                                const category = todoCategories.find(
+                                  (todoCategory) => todoCategory.id === todo.categoryId,
+                                )
+
+                                return (
+                                  <div
+                                    key={todo.id}
+                                    className={`${styles.scheduleTodoItem} ${
+                                      editingTodoId === todo.id ? styles.editingScheduleTodoItem : ''
+                                    }`}
+                                  >
+                                    {editingTodoId === todo.id ? (
+                                      <div className={styles.scheduleTodoEditForm}>
+                                        <input
+                                          value={editingTodoTitle}
+                                          onChange={(changeEvent) =>
+                                            setEditingTodoTitle(changeEvent.target.value)
+                                          }
+                                          aria-label={`${todo.title} 수정`}
+                                        />
+                                        <select
+                                          value={editingTodoCategoryId}
+                                          onChange={(changeEvent) =>
+                                            setEditingTodoCategoryId(changeEvent.target.value)
+                                          }
+                                          aria-label={`${todo.title} Todo 카테고리`}
+                                        >
+                                          {todoCategories.map((todoCategory) => (
+                                            <option key={todoCategory.id} value={todoCategory.id}>
+                                              #{todoCategory.label}
+                                            </option>
+                                          ))}
+                                        </select>
+                                        <button type="button" onClick={() => handleSaveTodo(todo.id)}>
+                                          저장
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <label>
+                                          <input
+                                            type="checkbox"
+                                            checked={todo.completed}
+                                            onChange={() => toggleTodo(todo.id)}
+                                          />
+                                          <span>{todo.title}</span>
+                                        </label>
+                                        {category ? (
+                                          <span className={styles.todoCategoryTag}>
+                                            #{category.label}
+                                          </span>
+                                        ) : null}
+                                        <div className={styles.todoMoreMenuWrap} data-todo-menu>
+                                          <button
+                                            type="button"
+                                            className={styles.todoMoreButton}
+                                            onClick={() =>
+                                              setOpenTodoMenuId((currentTodoId) =>
+                                                currentTodoId === todo.id ? null : todo.id,
+                                              )
+                                            }
+                                            aria-label={`${todo.title} 더보기`}
+                                          >
+                                            ⋮
+                                          </button>
+                                          {openTodoMenuId === todo.id ? (
+                                            <div className={styles.todoActionMenu}>
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  handleStartEditTodo(
+                                                    todo.id,
+                                                    todo.title,
+                                                    todo.categoryId,
+                                                  )
+                                                }
+                                              >
+                                                수정
+                                              </button>
+                                              <button type="button" onClick={() => deleteTodo(todo.id)}>
+                                                삭제
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  setRoutineTodo(todo)
+                                                  setOpenTodoMenuId(null)
+                                                }}
+                                              >
+                                                루틴화
+                                              </button>
+                                            </div>
+                                          ) : null}
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+                                )
+                              })
+                            ) : (
+                              <span className={styles.emptyDetail}>이 하위 그룹에 속한 Todo가 없습니다</span>
+                            )}
+                            {creatingTodoNodeId === childNode.id ? (
+                              <div className={styles.scheduleTodoCreateForm}>
+                                <input
+                                  value={newTodoTitle}
+                                  onChange={(changeEvent) => setNewTodoTitle(changeEvent.target.value)}
+                                  placeholder="새 Todo"
+                                  aria-label={`${childNode.label} 새 Todo`}
+                                />
+                                <select
+                                  value={newTodoCategoryId}
+                                  onChange={(changeEvent) =>
+                                    setNewTodoCategoryId(changeEvent.target.value)
+                                  }
+                                  aria-label="새 Todo 카테고리"
+                                >
+                                  {todoCategories.map((category) => (
+                                    <option key={category.id} value={category.id}>
+                                      #{category.label}
+                                    </option>
+                                  ))}
+                                </select>
+                                <button type="button" onClick={() => handleAddNodeTodo(childNode.id)}>
+                                  추가
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setCreatingTodoNodeId(null)
+                                    setNewTodoTitle('')
+                                  }}
+                                >
+                                  취소
+                                </button>
+                              </div>
+                            ) : null}
                           </div>
                           <div className={styles.scheduleList}>
                             {childEvents.length > 0 ? (

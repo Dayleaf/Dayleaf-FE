@@ -3,7 +3,6 @@
 import {
   useMemo,
   useState,
-  type CSSProperties,
   type DragEvent,
   type FormEvent,
   type KeyboardEvent,
@@ -349,10 +348,9 @@ export default function DailyTodoPanel({ date }: DailyTodoPanelProps) {
           <div className={styles.todoManagedCategoryList}>
             {todoCategories.map((category) => (
               <div key={category.id} className={styles.todoManagedCategory}>
-                <span
-                  className={styles.categoryDot}
-                  style={{ '--category-color': category.color } as CSSProperties}
-                />
+                <span className={styles.todoManagedCategoryHash} aria-hidden="true">
+                  #
+                </span>
                 {editingCategoryId === category.id ? (
                   <input
                     value={editingCategoryName}
@@ -360,7 +358,7 @@ export default function DailyTodoPanel({ date }: DailyTodoPanelProps) {
                     aria-label={`${category.label} 카테고리 이름 수정`}
                   />
                 ) : (
-                  <span>#{category.label}</span>
+                  <span>{category.label}</span>
                 )}
                 {editingCategoryId === category.id ? (
                   <button type="button" onClick={handleSaveCategory}>
@@ -406,10 +404,9 @@ export default function DailyTodoPanel({ date }: DailyTodoPanelProps) {
             return (
               <section key={category.id} className={styles.todoCategory}>
                 <div className={styles.todoCategoryHeader}>
-                  <span
-                    className={styles.categoryDot}
-                    style={{ '--category-color': category.color } as CSSProperties}
-                  />
+                  <span className={styles.todoManagedCategoryHash} aria-hidden="true">
+                    #
+                  </span>
                   <h2>{category.label}</h2>
                   <button
                     type="button"

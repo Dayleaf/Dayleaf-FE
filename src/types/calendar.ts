@@ -45,6 +45,7 @@ export type CalendarTodo = {
   completed: boolean
   date?: string
   categoryId?: string
+  nodeId?: string
   eventId?: string
   priority?: 'LOW' | 'MEDIUM' | 'HIGH'
   priorityOrder?: number

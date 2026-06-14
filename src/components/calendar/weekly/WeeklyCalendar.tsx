@@ -69,7 +69,7 @@ export default function WeeklyCalendar() {
   }, [nodes, visibleNodeIds])
   const eventsByDate = useMemo(() => {
     return events
-      .filter((event) => visibleCategoryIds.has(event.categoryId))
+      .filter((event) => !event.categoryId || visibleCategoryIds.has(event.categoryId))
       .reduce<Record<string, CalendarEvent[]>>((groupedEvents, event) => {
       const dayEvents = groupedEvents[event.date] ?? []
       return {
@@ -81,7 +81,12 @@ export default function WeeklyCalendar() {
       }, {})
   }, [events, visibleCategoryIds])
   const visibleEventIds = useMemo(
-    () => new Set(events.filter((event) => visibleCategoryIds.has(event.categoryId)).map((event) => event.id)),
+    () =>
+      new Set(
+        events
+          .filter((event) => !event.categoryId || visibleCategoryIds.has(event.categoryId))
+          .map((event) => event.id),
+      ),
     [events, visibleCategoryIds],
   )
   const visibleTodos = useMemo(

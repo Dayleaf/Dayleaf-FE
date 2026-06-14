@@ -202,7 +202,7 @@
   min-height: var(--space-8);
 }
 
-.todoManagedCategory span:not(.categoryDot) {
+.todoManagedCategory span:not(.categoryDot, .todoManagedCategoryHash) {
   min-width: 0;
   flex: 1;
   color: var(--color-text);
@@ -211,6 +211,13 @@
   white-space: nowrap;
   font-size: var(--font-size-sm);
   font-weight: 750;
+}
+
+.todoManagedCategoryHash {
+  flex: 0 0 auto;
+  color: var(--color-brand);
+  font-size: var(--font-size-sm);
+  font-weight: 900;
 }
 
 .todoViewTabs {

@@ -38,11 +38,32 @@
     letter-spacing: -0.01em;
 }
 
-/* ── 상단 3분할 그리드 (날씨 / 일정 / 진행률) ──────────── */
+/* ── 상단 그리드 (날씨 / 일정 / 진행률) ──────────── */
 .topGrid {
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto minmax(320px, 1fr);
     gap: var(--space-5);
+    flex: 1;
+    min-height: 0;
+}
+
+.weatherArea {
+    grid-column: 1 / -1;
+}
+
+.scheduleArea,
+.progressArea,
+.weatherArea {
+    min-width: 0;
+    display: flex;
+}
+
+.scheduleArea > *,
+.progressArea > *,
+.weatherArea > * {
+    width: 100%;
+    flex: 1;
 }
 
 .card {
@@ -220,6 +241,7 @@
 }
 
 .progressFill {
+    display: block;
     height: 100%;
     border-radius: 999px;
     background: var(--color-brand);
@@ -420,6 +442,7 @@
 @media (max-width: 1080px) {
     .topGrid {
         grid-template-columns: 1fr;
+        grid-template-rows: auto;
     }
 }
 

@@ -161,12 +161,12 @@ export default function Sidebar() {
 
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.logo}>
+      <Link href="/" className={styles.logo} aria-label="DayLeaf 메인으로 이동">
         <span className={styles.logoMark} aria-hidden="true">
           <Image src="/dayleaf-logo.png" alt="" width={34} height={33} priority />
         </span>
         <span>DayLeaf</span>
-      </div>
+      </Link>
 
       <nav className={styles.nav}>
         {navItems.map((item) => {

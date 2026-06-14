@@ -23,6 +23,7 @@ type EventModalProps = {
 }
 
 const defaultCategoryId = 'work'
+const noGroupCategoryId = ''
 
 const recurrenceOptions: Array<{ label: string; value: RecurrenceFrequency }> = [
   { label: '반복 안 함', value: 'NONE' },
@@ -76,7 +77,7 @@ export default function EventModal({
       startTime,
       endTime,
       categoryId,
-      color: getCategoryColor(categoryId),
+      color: categoryId ? getCategoryColor(categoryId) : 'var(--color-brand)',
       recurrenceRule: getRecurrenceRule(recurrenceFrequency),
     })
   }
@@ -140,6 +141,7 @@ export default function EventModal({
             value={categoryId}
             onChange={(changeEvent) => setCategoryId(changeEvent.target.value)}
           >
+            <option value={noGroupCategoryId}>그룹 없음</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.label}

@@ -54,7 +54,7 @@ export default function MonthlyCalendar() {
   }, [nodes, visibleNodeIds])
   const eventsByDate = useMemo(() => {
     return events
-      .filter((event) => visibleCategoryIds.has(event.categoryId))
+      .filter((event) => !event.categoryId || visibleCategoryIds.has(event.categoryId))
       .reduce<Record<string, CalendarEvent[]>>((groupedEvents, event) => {
       const dayEvents = groupedEvents[event.date] ?? []
       return {

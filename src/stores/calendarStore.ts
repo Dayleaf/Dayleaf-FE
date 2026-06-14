@@ -48,6 +48,7 @@ type CalendarStore = {
   updateRoutine: (routineId: string, draft: Partial<CalendarRoutineDraft>) => void
   completeRoutine: (routineId: string) => void
   reopenRoutine: (routineId: string) => void
+  toggleRoutineDate: (routineId: string, date: string) => void
   deleteRoutine: (routineId: string) => void
   addTodoCategory: (label: string) => void
   updateTodoCategory: (categoryId: string, label: string) => void
@@ -309,6 +310,24 @@ export const useCalendarStore = create<CalendarStore>((set) => ({
       routines: state.routines.map((routine) =>
         routine.id === routineId ? { ...routine, completedAt: undefined } : routine,
       ),
+    }))
+  },
+  toggleRoutineDate: (routineId, date) => {
+    set((state) => ({
+      routines: state.routines.map((routine) => {
+        if (routine.id !== routineId) {
+          return routine
+        }
+
+        const hasDate = routine.completionDates.includes(date)
+
+        return {
+          ...routine,
+          completionDates: hasDate
+            ? routine.completionDates.filter((completionDate) => completionDate !== date)
+            : [...routine.completionDates, date].sort(),
+        }
+      }),
     }))
   },
   deleteRoutine: (routineId) => {

@@ -84,7 +84,9 @@ export default function DailyCalendar({ date }: DailyCalendarProps) {
   }, [nodes, visibleNodeIds])
   const dayEvents = useMemo(() => {
     return events
-      .filter((event) => event.date === day.key && visibleCategoryIds.has(event.categoryId))
+      .filter(
+        (event) => event.date === day.key && (!event.categoryId || visibleCategoryIds.has(event.categoryId)),
+      )
       .sort((first, second) => first.startTime.localeCompare(second.startTime))
   }, [day.key, events, visibleCategoryIds])
   const getNodeColor = (nodeId: string) =>
