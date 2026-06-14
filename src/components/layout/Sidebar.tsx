@@ -153,7 +153,7 @@ export default function Sidebar() {
     )
   }
   const renderNodeTree = (showCheckbox: boolean) => (
-    <section className={`${styles.section} ${styles.nodeSection}`} aria-label="Node 목록">
+    <section className={`${styles.section} ${styles.nodeSection}`} aria-label="그룹 목록">
       <div className={styles.nodeTree}>
         {nodes
           .filter((node) => !node.parentId)
@@ -213,18 +213,6 @@ export default function Sidebar() {
             >
               {day.isCurrentMonth ? day.dayNumber : ''}
             </button>
-          ))}
-        </div>
-      </section>
-
-      <section className={styles.section} aria-labelledby="filter-title">
-        <h2 id="filter-title">필터</h2>
-        <div className={styles.filterList}>
-          {['전체 일정', '반복 일정', '완료된 일정'].map((filter, index) => (
-            <label key={filter} className={styles.filterItem}>
-              <input type="checkbox" defaultChecked={index < 2} />
-              <span>{filter}</span>
-            </label>
           ))}
         </div>
       </section>

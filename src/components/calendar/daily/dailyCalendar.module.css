@@ -288,24 +288,25 @@
 }
 
 .todoCategoryHeader button,
-.todoRemoveButton {
-  width: var(--space-7);
+.todoMoreButton {
+  width: var(--space-6);
   height: var(--space-7);
   display: grid;
   place-items: center;
-  border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
   padding: 0;
-  font-size: var(--font-size-sm);
-  font-weight: 850;
+  font-size: var(--font-size-lg);
+  font-weight: 650;
+  line-height: 1;
 }
 
 .todoCategoryHeader button:hover,
-.todoRemoveButton:hover {
-  border-color: var(--color-border);
-  color: var(--color-text);
+.todoMoreButton:hover {
+  background: var(--color-brand-soft);
+  color: var(--color-brand-strong);
 }
 
 .todoCategoryItems {
@@ -326,6 +327,30 @@
   gap: var(--space-1);
 }
 
+.todoPriorityTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.todoPriorityTitleRow h2 {
+  flex: 1;
+}
+
+.todoPriorityTitleRow button {
+  width: var(--space-6);
+  height: var(--space-7);
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  padding: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
 .todoPriorityHeader h2,
 .todoPriorityHeader span {
   margin: 0;
@@ -344,7 +369,8 @@
 }
 
 .dailyTodoItem {
-  min-height: var(--space-9);
+  position: relative;
+  min-height: var(--space-10);
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -362,6 +388,35 @@
 .draggingTodoItem {
   background: var(--color-brand-soft);
   opacity: 0.72;
+}
+
+.dragOverTodoItem::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--space-1) * -1);
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--color-brand);
+  box-shadow: 0 0 0 2px var(--color-brand-soft);
+}
+
+.todoEndDropZone {
+  position: relative;
+  min-height: var(--space-5);
+}
+
+.activeTodoEndDropZone::before {
+  content: '';
+  position: absolute;
+  top: var(--space-2);
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--color-brand);
+  box-shadow: 0 0 0 2px var(--color-brand-soft);
 }
 
 .todoDragHandle {
@@ -387,7 +442,7 @@
   accent-color: var(--color-brand);
 }
 
-.dailyTodoItem button:not(.todoRemoveButton) {
+.dailyTodoItem > button:not(.todoMoreButton) {
   min-width: 0;
   flex: 1;
   border: 0;
@@ -400,6 +455,103 @@
   white-space: nowrap;
   font-size: var(--font-size-sm);
   font-weight: 750;
+}
+
+.dailyTodoNewRow,
+.todoInlineEditForm {
+  min-height: var(--space-10);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.dailyTodoNewRow input[type='checkbox'] {
+  width: var(--space-4);
+  height: var(--space-4);
+  opacity: 0.45;
+}
+
+.dailyTodoNewRow input:not([type]),
+.todoInlineEditForm input,
+.dailyTodoNewRow select,
+.todoInlineEditForm select {
+  min-width: 0;
+  height: var(--space-8);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 0 var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 650;
+}
+
+.dailyTodoNewRow input:not([type]),
+.todoInlineEditForm input {
+  flex: 1;
+}
+
+.dailyTodoNewRow select,
+.todoInlineEditForm select {
+  flex: 0 0 68px;
+  color: var(--color-text-muted);
+  font-weight: 650;
+}
+
+.dailyTodoNewRow button,
+.todoInlineEditForm button {
+  height: var(--space-8);
+  border: 1px solid var(--color-brand);
+  border-radius: var(--radius-md);
+  background: var(--color-brand);
+  color: var(--color-surface);
+  padding: 0 var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+}
+
+.todoInlineEditForm {
+  flex: 1;
+  border-bottom: 0;
+}
+
+.todoMoreMenuWrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.todoActionMenu {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 8;
+  min-width: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-popover);
+  padding: var(--space-1);
+}
+
+.todoActionMenu button {
+  min-height: var(--space-8);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  padding: 0 var(--space-2);
+  text-align: left;
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+}
+
+.todoActionMenu button:hover {
+  background: var(--color-hover);
+  color: var(--color-text);
 }
 
 .completedDailyTodo,
@@ -465,6 +617,21 @@
   flex: 1;
 }
 
+.inlineTodoTitle {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  overflow: hidden;
+  padding: 0;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-sm);
+  font-weight: 750;
+}
+
 .inlineTodoItem select,
 .inlineTodoForm select {
   flex: 0 0 96px;
@@ -486,6 +653,21 @@
   border-color: var(--color-brand);
   background: var(--color-brand);
   color: var(--color-surface);
+}
+
+.inlineTodoItem .todoMoreButton {
+  width: var(--space-6);
+  height: var(--space-7);
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  padding: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 650;
+  line-height: 1;
 }
 
 .todoModalOverlay {

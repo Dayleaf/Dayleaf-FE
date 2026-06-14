@@ -1,7 +1,7 @@
 'use client'
 
 import dayjs from 'dayjs'
-import { useRef, useState, type DragEvent, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type DragEvent, type FormEvent } from 'react'
 import EventTodoList from '@/components/calendar/daily/EventTodoList'
 import EventModal from '@/components/calendar/weekly/EventModal'
 import { useCalendarStore } from '@/stores/calendarStore'
@@ -40,8 +40,38 @@ type ColorSwatchPickerProps = {
 }
 
 function ColorDropdownPicker({ label, onChange, value }: ColorSwatchPickerProps) {
+  const dropdownRef = useRef<HTMLDetailsElement | null>(null)
+  const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
+    const handlePointerDown = (pointerEvent: PointerEvent) => {
+      const target = pointerEvent.target
+
+      if (!(target instanceof Node) || dropdownRef.current?.contains(target)) {
+        return
+      }
+
+      setIsOpen(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [isOpen])
+
   return (
-    <details className={styles.colorDropdown}>
+    <details
+      ref={dropdownRef}
+      className={styles.colorDropdown}
+      open={isOpen}
+      onToggle={(toggleEvent) => setIsOpen(toggleEvent.currentTarget.open)}
+    >
       <summary>
         <span className={styles.colorPreview} style={{ background: value }} />
         <span>{label}</span>
@@ -53,7 +83,10 @@ function ColorDropdownPicker({ label, onChange, value }: ColorSwatchPickerProps)
             type="button"
             className={`${styles.colorSwatch} ${value === color ? styles.activeColorSwatch : ''}`}
             style={{ background: color }}
-            onClick={() => onChange(color)}
+            onClick={() => {
+              onChange(color)
+              setIsOpen(false)
+            }}
             role="radio"
             aria-checked={value === color}
             aria-label={color}
@@ -95,6 +128,10 @@ export default function LibraryPage() {
   const [creatingTodoEventId, setCreatingTodoEventId] = useState<string | null>(null)
   const [newTodoTitle, setNewTodoTitle] = useState('')
   const [newTodoCategoryId, setNewTodoCategoryId] = useState(todoCategories[0]?.id ?? '')
+  const [openTodoMenuId, setOpenTodoMenuId] = useState<string | null>(null)
+  const [editingTodoId, setEditingTodoId] = useState<string | null>(null)
+  const [editingTodoTitle, setEditingTodoTitle] = useState('')
+  const [editingTodoCategoryId, setEditingTodoCategoryId] = useState('')
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null)
   const [dragOverNodeId, setDragOverNodeId] = useState<string | null>(null)
   const [isDragOverEnd, setIsDragOverEnd] = useState(false)
@@ -122,6 +159,28 @@ export default function LibraryPage() {
       : selectedNode
         ? [selectedNode, ...selectedChildNodes]
         : nodes
+
+  useEffect(() => {
+    if (!openTodoMenuId) {
+      return
+    }
+
+    const handlePointerDown = (pointerEvent: PointerEvent) => {
+      const target = pointerEvent.target
+
+      if (target instanceof Element && target.closest('[data-todo-menu]')) {
+        return
+      }
+
+      setOpenTodoMenuId(null)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [openTodoMenuId])
 
   const handleCreateNode = (submitEvent: FormEvent<HTMLFormElement>) => {
     submitEvent.preventDefault()
@@ -244,6 +303,27 @@ export default function LibraryPage() {
     setNewTodoTitle('')
     setCreatingTodoEventId(null)
   }
+  const handleStartEditTodo = (todoId: string, title: string, categoryId?: string) => {
+    setEditingTodoId(todoId)
+    setEditingTodoTitle(title)
+    setEditingTodoCategoryId(categoryId ?? todoCategories[0]?.id ?? '')
+    setOpenTodoMenuId(null)
+  }
+  const handleSaveTodo = (todoId: string) => {
+    const title = editingTodoTitle.trim()
+
+    if (!title) {
+      return
+    }
+
+    updateTodo(todoId, {
+      title,
+      categoryId: editingTodoCategoryId,
+    })
+    setEditingTodoId(null)
+    setEditingTodoTitle('')
+    setEditingTodoCategoryId('')
+  }
   const handleDropNode = (dropEvent: DragEvent<HTMLElement>, targetNodeId?: string) => {
     dropEvent.preventDefault()
     const draggedNodeId = dropEvent.dataTransfer.getData('text/plain')
@@ -289,31 +369,31 @@ export default function LibraryPage() {
       <section className={styles.header}>
         <div>
           <p>Library</p>
-          <h1>Node를 관리합니다</h1>
+          <h1>그룹을 관리합니다</h1>
         </div>
-        <span>{nodes.length}개 node</span>
+        <span>{nodes.length}개 그룹</span>
       </section>
 
       <form className={styles.createPanel} onSubmit={handleCreateNode}>
         <label>
-          <span>Node 이름</span>
+          <span>그룹 이름</span>
           <input
             value={nodeName}
             onChange={(changeEvent) => setNodeName(changeEvent.target.value)}
-            placeholder="새 node 이름"
+            placeholder="새 그룹 이름"
           />
         </label>
         <label>
           <span>색상</span>
           <ColorDropdownPicker label="색상 선택" value={nodeColor} onChange={setNodeColor} />
         </label>
-        <button type="submit">상위 Node 추가</button>
+        <button type="submit">상위 그룹 추가</button>
       </form>
 
       <div className={styles.libraryGrid}>
-        <section className={styles.nodeList} aria-label="Node 목록">
+        <section className={styles.nodeList} aria-label="그룹 목록">
           <div className={styles.listSectionHeader}>
-            <h2>상위 Node</h2>
+            <h2>상위 그룹</h2>
             <span>드래그로 순서 변경</span>
           </div>
           {parentNodes.map((node) => {
@@ -328,7 +408,9 @@ export default function LibraryPage() {
                 key={node.id}
                 className={`${styles.nodeDropdown} ${isSelected ? styles.selectedNodeItem : ''} ${
                   draggingNodeId === node.id ? styles.draggingNodeItem : ''
-                } ${dragOverNodeId === node.id ? styles.dragOverNodeItem : ''}`}
+                } ${dragOverNodeId === node.id ? styles.dragOverNodeItem : ''} ${
+                  isEditing ? styles.editingNodeDropdown : ''
+                }`}
                 draggable
                 onDragStart={(dragEvent) => {
                   if (dragHandleNodeIdRef.current !== node.id) {
@@ -409,9 +491,9 @@ export default function LibraryPage() {
                     </p>
                   </div>
                   {isEditing ? (
-                    <div onClick={(clickEvent) => clickEvent.preventDefault()}>
+                    <div onClick={(clickEvent) => clickEvent.stopPropagation()}>
                       <ColorDropdownPicker
-                        label={`${node.label} 색상 수정`}
+                        label="색상 수정"
                         value={editingNodeColor}
                         onChange={setEditingNodeColor}
                       />
@@ -433,9 +515,11 @@ export default function LibraryPage() {
                         수정
                       </button>
                     )}
-                    <button type="button" onClick={() => deleteNode(node.id)}>
-                      삭제
-                    </button>
+                    {isEditing ? null : (
+                      <button type="button" onClick={() => deleteNode(node.id)}>
+                        삭제
+                      </button>
+                    )}
                   </div>
                 </summary>
                 <div className={styles.nodeDropdownPanel}>
@@ -459,7 +543,7 @@ export default function LibraryPage() {
                       )
                     })
                   ) : (
-                    <span className={styles.emptyDropdownItem}>하위 Node가 없습니다</span>
+                    <span className={styles.emptyDropdownItem}>하위 그룹이 없습니다</span>
                   )}
                 </div>
               </details>
@@ -482,20 +566,20 @@ export default function LibraryPage() {
           />
         </section>
 
-        <section className={styles.nodeDetail} aria-label="Node 상세">
+        <section className={styles.nodeDetail} aria-label="그룹 상세">
           {selectedNode ? (
             <>
               <div className={styles.nodeDetailHeader}>
                 <div className={styles.nodeDetailTitle}>
                   <span className={styles.nodeColor} style={{ background: selectedNode.color }} />
                   <div>
-                    <p>Selected Node</p>
+                    <p>선택된 그룹</p>
                     <h2>{selectedNode.label}</h2>
                   </div>
                 </div>
                 <div className={styles.detailActions}>
                   <button type="button" onClick={() => setIsChildNodeModalOpen(true)}>
-                    하위 Node 생성
+                    하위 그룹 생성
                   </button>
                   <button type="button" onClick={() => handleOpenCreateEvent(selectedNode.id)}>
                     일정 생성
@@ -503,7 +587,7 @@ export default function LibraryPage() {
                 </div>
               </div>
               <div className={styles.listSectionHeader}>
-                <h3>상위 Node 일정</h3>
+                <h3>상위 그룹 일정</h3>
                 <span>{selectedNodeEvents.length}개</span>
               </div>
               <div className={styles.scheduleList}>
@@ -541,28 +625,89 @@ export default function LibraryPage() {
                       <div className={styles.scheduleTodos}>
                         {eventTodos.length > 0 ? (
                           eventTodos.map((todo) => (
-                            <div key={todo.id} className={styles.scheduleTodoItem}>
-                              <label>
-                                <input
-                                  type="checkbox"
-                                  checked={todo.completed}
-                                  onChange={() => toggleTodo(todo.id)}
-                                />
-                                <span>{todo.title}</span>
-                              </label>
-                              <select
-                                value={todo.categoryId ?? todoCategories[0]?.id ?? ''}
-                                onChange={(changeEvent) =>
-                                  updateTodo(todo.id, { categoryId: changeEvent.target.value })
-                                }
-                                aria-label={`${todo.title} Todo 카테고리`}
-                              >
-                                {todoCategories.map((category) => (
-                                  <option key={category.id} value={category.id}>
-                                    #{category.label}
-                                  </option>
-                                ))}
-                              </select>
+                            <div
+                              key={todo.id}
+                              className={`${styles.scheduleTodoItem} ${
+                                editingTodoId === todo.id ? styles.editingScheduleTodoItem : ''
+                              }`}
+                            >
+                              {editingTodoId === todo.id ? (
+                                <div className={styles.scheduleTodoEditForm}>
+                                  <input
+                                    value={editingTodoTitle}
+                                    onChange={(changeEvent) =>
+                                      setEditingTodoTitle(changeEvent.target.value)
+                                    }
+                                    aria-label={`${todo.title} 수정`}
+                                  />
+                                  <select
+                                    value={editingTodoCategoryId}
+                                    onChange={(changeEvent) =>
+                                      setEditingTodoCategoryId(changeEvent.target.value)
+                                    }
+                                    aria-label={`${todo.title} Todo 카테고리`}
+                                  >
+                                    {todoCategories.map((category) => (
+                                      <option key={category.id} value={category.id}>
+                                        #{category.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  <button type="button" onClick={() => handleSaveTodo(todo.id)}>
+                                    저장
+                                  </button>
+                                </div>
+                              ) : (
+                                <>
+                                  <label>
+                                    <input
+                                      type="checkbox"
+                                      checked={todo.completed}
+                                      onChange={() => toggleTodo(todo.id)}
+                                    />
+                                    <span>{todo.title}</span>
+                                  </label>
+                                  <div className={styles.todoMoreMenuWrap} data-todo-menu>
+                                    <button
+                                      type="button"
+                                      className={styles.todoMoreButton}
+                                      onClick={() =>
+                                        setOpenTodoMenuId((currentTodoId) =>
+                                          currentTodoId === todo.id ? null : todo.id,
+                                        )
+                                      }
+                                      aria-label={`${todo.title} 더보기`}
+                                    >
+                                      ⋮
+                                    </button>
+                                    {openTodoMenuId === todo.id ? (
+                                      <div className={styles.todoActionMenu}>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            handleStartEditTodo(
+                                              todo.id,
+                                              todo.title,
+                                              todo.categoryId,
+                                            )
+                                          }
+                                        >
+                                          수정
+                                        </button>
+                                        <button type="button" onClick={() => deleteTodo(todo.id)}>
+                                          삭제
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => setOpenTodoMenuId(null)}
+                                        >
+                                          루틴화
+                                        </button>
+                                      </div>
+                                    ) : null}
+                                  </div>
+                                </>
+                              )}
                             </div>
                           ))
                         ) : (
@@ -570,7 +715,7 @@ export default function LibraryPage() {
                         )}
                         {creatingTodoEventId === event.id ? (
                           <div className={styles.scheduleTodoCreateForm}>
-                            <textarea
+                            <input
                               value={newTodoTitle}
                               onChange={(changeEvent) => setNewTodoTitle(changeEvent.target.value)}
                               placeholder="새 Todo"
@@ -608,12 +753,12 @@ export default function LibraryPage() {
                   )
                 })}
                 {selectedNodeEvents.length === 0 ? (
-                  <p className={styles.emptyDetail}>이 node에 속한 일정이 없습니다</p>
+                  <p className={styles.emptyDetail}>이 그룹에 속한 일정이 없습니다</p>
                 ) : null}
               </div>
-              <section className={styles.childNodeSection} aria-label="하위 Node">
+              <section className={styles.childNodeSection} aria-label="하위 그룹">
                 <div className={styles.listSectionHeader}>
-                  <h3>하위 Node</h3>
+                  <h3>하위 그룹</h3>
                   <span>{selectedChildNodes.length}개</span>
                 </div>
                 {selectedChildNodes.length > 0 ? (
@@ -686,30 +831,97 @@ export default function LibraryPage() {
                                     <div className={styles.scheduleTodos}>
                                       {eventTodos.length > 0 ? (
                                         eventTodos.map((todo) => (
-                                          <div key={todo.id} className={styles.scheduleTodoItem}>
-                                            <label>
-                                              <input
-                                                type="checkbox"
-                                                checked={todo.completed}
-                                                onChange={() => toggleTodo(todo.id)}
-                                              />
-                                              <span>{todo.title}</span>
-                                            </label>
-                                            <select
-                                              value={todo.categoryId ?? todoCategories[0]?.id ?? ''}
-                                              onChange={(changeEvent) =>
-                                                updateTodo(todo.id, {
-                                                  categoryId: changeEvent.target.value,
-                                                })
-                                              }
-                                              aria-label={`${todo.title} Todo 카테고리`}
-                                            >
-                                              {todoCategories.map((category) => (
-                                                <option key={category.id} value={category.id}>
-                                                  #{category.label}
-                                                </option>
-                                              ))}
-                                            </select>
+                                          <div
+                                            key={todo.id}
+                                            className={`${styles.scheduleTodoItem} ${
+                                              editingTodoId === todo.id
+                                                ? styles.editingScheduleTodoItem
+                                                : ''
+                                            }`}
+                                          >
+                                            {editingTodoId === todo.id ? (
+                                              <div className={styles.scheduleTodoEditForm}>
+                                                <input
+                                                  value={editingTodoTitle}
+                                                  onChange={(changeEvent) =>
+                                                    setEditingTodoTitle(changeEvent.target.value)
+                                                  }
+                                                  aria-label={`${todo.title} 수정`}
+                                                />
+                                                <select
+                                                  value={editingTodoCategoryId}
+                                                  onChange={(changeEvent) =>
+                                                    setEditingTodoCategoryId(changeEvent.target.value)
+                                                  }
+                                                  aria-label={`${todo.title} Todo 카테고리`}
+                                                >
+                                                  {todoCategories.map((category) => (
+                                                    <option key={category.id} value={category.id}>
+                                                      #{category.label}
+                                                    </option>
+                                                  ))}
+                                                </select>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleSaveTodo(todo.id)}
+                                                >
+                                                  저장
+                                                </button>
+                                              </div>
+                                            ) : (
+                                              <>
+                                                <label>
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={todo.completed}
+                                                    onChange={() => toggleTodo(todo.id)}
+                                                  />
+                                                  <span>{todo.title}</span>
+                                                </label>
+                                                <div className={styles.todoMoreMenuWrap} data-todo-menu>
+                                                  <button
+                                                    type="button"
+                                                    className={styles.todoMoreButton}
+                                                    onClick={() =>
+                                                      setOpenTodoMenuId((currentTodoId) =>
+                                                        currentTodoId === todo.id ? null : todo.id,
+                                                      )
+                                                    }
+                                                    aria-label={`${todo.title} 더보기`}
+                                                  >
+                                                    ⋮
+                                                  </button>
+                                                  {openTodoMenuId === todo.id ? (
+                                                    <div className={styles.todoActionMenu}>
+                                                      <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                          handleStartEditTodo(
+                                                            todo.id,
+                                                            todo.title,
+                                                            todo.categoryId,
+                                                          )
+                                                        }
+                                                      >
+                                                        수정
+                                                      </button>
+                                                      <button
+                                                        type="button"
+                                                        onClick={() => deleteTodo(todo.id)}
+                                                      >
+                                                        삭제
+                                                      </button>
+                                                      <button
+                                                        type="button"
+                                                        onClick={() => setOpenTodoMenuId(null)}
+                                                      >
+                                                        루틴화
+                                                      </button>
+                                                    </div>
+                                                  ) : null}
+                                                </div>
+                                              </>
+                                            )}
                                           </div>
                                         ))
                                       ) : (
@@ -717,7 +929,7 @@ export default function LibraryPage() {
                                       )}
                                       {creatingTodoEventId === event.id ? (
                                         <div className={styles.scheduleTodoCreateForm}>
-                                          <textarea
+                                          <input
                                             value={newTodoTitle}
                                             onChange={(changeEvent) =>
                                               setNewTodoTitle(changeEvent.target.value)
@@ -760,7 +972,7 @@ export default function LibraryPage() {
                                 )
                               })
                             ) : (
-                              <p className={styles.emptyDetail}>이 하위 node에 속한 일정이 없습니다</p>
+                              <p className={styles.emptyDetail}>이 하위 그룹에 속한 일정이 없습니다</p>
                             )}
                           </div>
                         </details>
@@ -768,12 +980,12 @@ export default function LibraryPage() {
                     })}
                   </div>
                 ) : (
-                  <p className={styles.emptyDetail}>등록된 하위 node가 없습니다</p>
+                  <p className={styles.emptyDetail}>등록된 하위 그룹이 없습니다</p>
                 )}
               </section>
             </>
           ) : (
-            <p className={styles.emptyDetail}>Node를 먼저 추가해주세요</p>
+            <p className={styles.emptyDetail}>그룹을 먼저 추가해주세요</p>
           )}
         </section>
       </div>
@@ -790,7 +1002,7 @@ export default function LibraryPage() {
           >
             <div className={styles.nodeModalHeader}>
               <div>
-                <p>하위 Node 생성</p>
+                <p>하위 그룹 생성</p>
                 <h2>{selectedNode.label} 안에 추가합니다</h2>
               </div>
               <button type="button" onClick={() => setIsChildNodeModalOpen(false)} aria-label="닫기">
@@ -802,7 +1014,7 @@ export default function LibraryPage() {
               <input
                 value={childNodeName}
                 onChange={(changeEvent) => setChildNodeName(changeEvent.target.value)}
-                placeholder="하위 node 이름"
+                placeholder="하위 그룹 이름"
                 autoFocus
               />
             </label>

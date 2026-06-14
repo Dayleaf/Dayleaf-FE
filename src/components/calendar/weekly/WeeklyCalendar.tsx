@@ -176,12 +176,12 @@ export default function WeeklyCalendar() {
     setDraftTodos([])
   }
 
-  const handleAddTodo = (title: string, createdAt: string) => {
+  const handleAddTodo = (title: string, createdAt: string, categoryId: string) => {
     addTodo({
       title,
       completed: false,
       date: createdAt,
-      categoryId: 'todo-study',
+      categoryId,
       createdAt,
     })
   }
@@ -190,8 +190,8 @@ export default function WeeklyCalendar() {
     toggleTodo(todoId)
   }
 
-  const handleUpdateTodo = (todoId: string, title: string) => {
-    updateTodo(todoId, { title })
+  const handleUpdateTodo = (todoId: string, draft: Partial<CalendarTodoDraft>) => {
+    updateTodo(todoId, draft)
   }
 
   const handleDeleteTodo = (todoId: string) => {
@@ -244,6 +244,7 @@ export default function WeeklyCalendar() {
       <WeekDayHeader days={days} />
       {isTodoOpen ? (
         <TodoPanel
+          categories={todoCategories}
           days={days}
           todos={visibleTodos}
           onAddTodo={handleAddTodo}

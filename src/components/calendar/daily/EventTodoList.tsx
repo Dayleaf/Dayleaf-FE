@@ -26,6 +26,10 @@ export default function EventTodoList({
   const initialCategoryId = defaultCategoryId ?? categories[0]?.id ?? 'study'
   const [title, setTitle] = useState('')
   const [categoryId, setCategoryId] = useState(initialCategoryId)
+  const [openTodoMenuId, setOpenTodoMenuId] = useState<string | null>(null)
+  const [editingTodoId, setEditingTodoId] = useState<string | null>(null)
+  const [editingTitle, setEditingTitle] = useState('')
+  const [editingCategoryId, setEditingCategoryId] = useState(initialCategoryId)
 
   const handleAddTodo = () => {
     const nextTitle = title.trim()
@@ -49,6 +53,29 @@ export default function EventTodoList({
     }
   }
 
+  const handleStartEditTodo = (todo: CalendarTodo) => {
+    setEditingTodoId(todo.id)
+    setEditingTitle(todo.title)
+    setEditingCategoryId(todo.categoryId ?? initialCategoryId)
+    setOpenTodoMenuId(null)
+  }
+
+  const handleSaveTodo = (todoId: string) => {
+    const nextTitle = editingTitle.trim()
+
+    if (!nextTitle) {
+      return
+    }
+
+    onUpdateTodo(todoId, {
+      title: nextTitle,
+      categoryId: editingCategoryId,
+    })
+    setEditingTodoId(null)
+    setEditingTitle('')
+    setEditingCategoryId(initialCategoryId)
+  }
+
   return (
     <section className={styles.eventTodoSection} aria-label="일정 연결 Todo">
       <div className={styles.eventTodoHeader}>
@@ -63,30 +90,71 @@ export default function EventTodoList({
               onChange={() => onToggleTodo(todo.id)}
               aria-label={`${todo.title} 완료`}
             />
-            <input
-              value={todo.title}
-              onChange={(changeEvent) => onUpdateTodo(todo.id, { title: changeEvent.target.value })}
-              className={todo.completed ? styles.completedTodoInput : undefined}
-              aria-label={`${todo.title} 수정`}
-            />
-            {categories.length > 0 ? (
-              <select
-                value={todo.categoryId ?? initialCategoryId}
-                onChange={(changeEvent) =>
-                  onUpdateTodo(todo.id, { categoryId: changeEvent.target.value })
-                }
-                aria-label={`${todo.title} 카테고리`}
+            {editingTodoId === todo.id ? (
+              <div className={styles.todoInlineEditForm}>
+                <input
+                  value={editingTitle}
+                  onChange={(changeEvent) => setEditingTitle(changeEvent.target.value)}
+                  className={todo.completed ? styles.completedTodoInput : undefined}
+                  aria-label={`${todo.title} 수정`}
+                />
+                {categories.length > 0 ? (
+                  <select
+                    value={editingCategoryId}
+                    onChange={(changeEvent) => setEditingCategoryId(changeEvent.target.value)}
+                    aria-label={`${todo.title} 카테고리`}
+                  >
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : null}
+                <button type="button" onClick={() => handleSaveTodo(todo.id)}>
+                  저장
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className={`${styles.inlineTodoTitle} ${
+                  todo.completed ? styles.completedTodoInput : ''
+                }`}
+                onClick={() => onToggleTodo(todo.id)}
               >
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.label}
-                  </option>
-                ))}
-              </select>
-            ) : null}
-            <button type="button" onClick={() => onDeleteTodo(todo.id)} aria-label={`${todo.title} 삭제`}>
-              x
-            </button>
+                {todo.title}
+              </button>
+            )}
+            {editingTodoId === todo.id ? null : (
+            <div className={styles.todoMoreMenuWrap}>
+              <button
+                type="button"
+                className={styles.todoMoreButton}
+                onClick={() =>
+                  setOpenTodoMenuId((currentTodoId) =>
+                    currentTodoId === todo.id ? null : todo.id,
+                  )
+                }
+                aria-label={`${todo.title} 더보기`}
+              >
+                ⋮
+              </button>
+              {openTodoMenuId === todo.id ? (
+                <div className={styles.todoActionMenu}>
+                  <button type="button" onClick={() => handleStartEditTodo(todo)}>
+                    수정
+                  </button>
+                  <button type="button" onClick={() => onDeleteTodo(todo.id)}>
+                    삭제
+                  </button>
+                  <button type="button" onClick={() => setOpenTodoMenuId(null)}>
+                    루틴화
+                  </button>
+                </div>
+              ) : null}
+            </div>
+            )}
           </div>
         ))}
         <div className={styles.inlineTodoForm}>

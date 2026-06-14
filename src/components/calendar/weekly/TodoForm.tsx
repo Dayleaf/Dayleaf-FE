@@ -1,14 +1,16 @@
 import { useState, type KeyboardEvent } from 'react'
-import type { CalendarDay } from '@/types/calendar'
+import type { CalendarCategory, CalendarDay } from '@/types/calendar'
 import styles from './weeklyCalendar.module.css'
 
 type TodoFormProps = {
+  categories: CalendarCategory[]
   day: CalendarDay
-  onAddTodo: (title: string, createdAt: string) => void
+  onAddTodo: (title: string, createdAt: string, categoryId: string) => void
 }
 
-export default function TodoForm({ day, onAddTodo }: TodoFormProps) {
+export default function TodoForm({ categories, day, onAddTodo }: TodoFormProps) {
   const [title, setTitle] = useState('')
+  const [categoryId, setCategoryId] = useState(categories[0]?.id ?? '')
 
   const saveTodo = () => {
     const nextTitle = title.trim()
@@ -17,7 +19,7 @@ export default function TodoForm({ day, onAddTodo }: TodoFormProps) {
       return
     }
 
-    onAddTodo(nextTitle, day.key)
+    onAddTodo(nextTitle, day.key, categoryId)
     setTitle('')
   }
 
@@ -42,6 +44,17 @@ export default function TodoForm({ day, onAddTodo }: TodoFormProps) {
         placeholder="new todo"
         aria-label={`${day.key} Todo 추가`}
       />
+      <select
+        value={categoryId}
+        onChange={(changeEvent) => setCategoryId(changeEvent.target.value)}
+        aria-label="새 Todo 카테고리"
+      >
+        {categories.map((category) => (
+          <option key={category.id} value={category.id}>
+            {category.label}
+          </option>
+        ))}
+      </select>
       {title.trim() ? (
         <button
           className={styles.todoSubmitButton}

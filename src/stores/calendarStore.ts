@@ -1,5 +1,6 @@
 'use client'
 
+import dayjs from 'dayjs'
 import { create } from 'zustand'
 import {
   calendarCategories as initialNodes,
@@ -14,6 +15,8 @@ import type {
   CalendarTodo,
   CalendarTodoDraft,
 } from '@/types/calendar'
+
+const DEFAULT_RECURRENCE_COUNT = 12
 
 type CalendarStore = {
   events: CalendarEvent[]
@@ -42,6 +45,52 @@ type CalendarStore = {
   deleteTodoCategory: (categoryId: string) => void
 }
 
+function getRecurringDates(draft: CalendarEventDraft) {
+  const recurrenceRule = draft.recurrenceRule
+
+  if (!recurrenceRule || recurrenceRule.frequency === 'NONE') {
+    return [draft.date]
+  }
+
+  const interval = recurrenceRule.interval ?? 1
+  const startDate = dayjs(draft.date)
+  const untilDate = recurrenceRule.until ? dayjs(recurrenceRule.until) : null
+  const occurrenceCount = recurrenceRule.count ?? DEFAULT_RECURRENCE_COUNT
+  const dates: string[] = []
+  let cursor = startDate
+
+  while (dates.length < occurrenceCount) {
+    if (untilDate && cursor.isAfter(untilDate, 'day')) {
+      break
+    }
+
+    if (recurrenceRule.frequency === 'WEEKDAYS') {
+      if ([1, 2, 3, 4, 5].includes(cursor.day())) {
+        dates.push(cursor.format('YYYY-MM-DD'))
+      }
+
+      cursor = cursor.add(1, 'day')
+      continue
+    }
+
+    dates.push(cursor.format('YYYY-MM-DD'))
+
+    if (recurrenceRule.frequency === 'DAILY') {
+      cursor = cursor.add(interval, 'day')
+      continue
+    }
+
+    if (recurrenceRule.frequency === 'MONTHLY') {
+      cursor = cursor.add(interval, 'month')
+      continue
+    }
+
+    cursor = cursor.add(interval, 'week')
+  }
+
+  return dates
+}
+
 function createId(prefix: string) {
   return `${prefix}-${globalThis.crypto?.randomUUID?.() ?? Date.now()}`
 }
@@ -53,9 +102,14 @@ export const useCalendarStore = create<CalendarStore>((set) => ({
   visibleNodeIds: initialNodes.map((node) => node.id),
   todoCategories: initialTodoCategories,
   addEvent: (draft) => {
-    const event = { ...draft, id: createId('event') }
+    const events = getRecurringDates(draft).map((date) => ({
+      ...draft,
+      date,
+      id: createId('event'),
+    }))
+    const event = events[0]
 
-    set((state) => ({ events: [...state.events, event] }))
+    set((state) => ({ events: [...state.events, ...events] }))
     return event
   },
   updateEvent: (eventId, draft) => {
