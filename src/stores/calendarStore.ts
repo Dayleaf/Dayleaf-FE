@@ -1,8 +1,9 @@
 'use client'
 
 import { create } from 'zustand'
-import { sampleEvents, sampleTodos } from '@/lib/calendar'
+import { sampleEvents, sampleTodos, todoCategories as initialTodoCategories } from '@/lib/calendar'
 import type {
+  CalendarCategory,
   CalendarEvent,
   CalendarEventDraft,
   CalendarTodo,
@@ -12,6 +13,7 @@ import type {
 type CalendarStore = {
   events: CalendarEvent[]
   todos: CalendarTodo[]
+  todoCategories: CalendarCategory[]
   addEvent: (draft: CalendarEventDraft) => CalendarEvent
   updateEvent: (eventId: string, draft: CalendarEventDraft) => void
   deleteEvent: (eventId: string) => void
@@ -19,6 +21,10 @@ type CalendarStore = {
   updateTodo: (todoId: string, draft: Partial<CalendarTodoDraft>) => void
   toggleTodo: (todoId: string) => void
   deleteTodo: (todoId: string) => void
+  reorderTodosByPriority: (todoIds: string[]) => void
+  addTodoCategory: (label: string) => void
+  updateTodoCategory: (categoryId: string, label: string) => void
+  deleteTodoCategory: (categoryId: string) => void
 }
 
 function createId(prefix: string) {
@@ -27,7 +33,8 @@ function createId(prefix: string) {
 
 export const useCalendarStore = create<CalendarStore>((set) => ({
   events: sampleEvents,
-  todos: sampleTodos,
+  todos: sampleTodos.map((todo, index) => ({ ...todo, priorityOrder: index })),
+  todoCategories: initialTodoCategories,
   addEvent: (draft) => {
     const event = { ...draft, id: createId('event') }
 
@@ -46,7 +53,7 @@ export const useCalendarStore = create<CalendarStore>((set) => ({
     }))
   },
   addTodo: (draft) => {
-    const todo = { ...draft, id: createId('todo') }
+    const todo = { ...draft, priorityOrder: draft.priorityOrder ?? Date.now(), id: createId('todo') }
 
     set((state) => ({ todos: [...state.todos, todo] }))
     return todo
@@ -65,5 +72,64 @@ export const useCalendarStore = create<CalendarStore>((set) => ({
   },
   deleteTodo: (todoId) => {
     set((state) => ({ todos: state.todos.filter((todo) => todo.id !== todoId) }))
+  },
+  reorderTodosByPriority: (todoIds) => {
+    const orderMap = new Map(todoIds.map((todoId, index) => [todoId, index]))
+
+    set((state) => ({
+      todos: state.todos.map((todo) => {
+        const priorityOrder = orderMap.get(todo.id)
+
+        return priorityOrder === undefined ? todo : { ...todo, priorityOrder }
+      }),
+    }))
+  },
+  addTodoCategory: (label) => {
+    const nextLabel = label.trim()
+
+    if (!nextLabel) {
+      return
+    }
+
+    set((state) => ({
+      todoCategories: [
+        ...state.todoCategories,
+        {
+          id: createId('todo-category'),
+          label: nextLabel,
+          color: 'var(--color-text-subtle)',
+        },
+      ],
+    }))
+  },
+  updateTodoCategory: (categoryId, label) => {
+    const nextLabel = label.trim()
+
+    if (!nextLabel) {
+      return
+    }
+
+    set((state) => ({
+      todoCategories: state.todoCategories.map((category) =>
+        category.id === categoryId ? { ...category, label: nextLabel } : category,
+      ),
+    }))
+  },
+  deleteTodoCategory: (categoryId) => {
+    set((state) => {
+      if (state.todoCategories.length <= 1) {
+        return state
+      }
+
+      const nextCategories = state.todoCategories.filter((category) => category.id !== categoryId)
+      const fallbackCategoryId = nextCategories[0]?.id
+
+      return {
+        todoCategories: nextCategories,
+        todos: state.todos.map((todo) =>
+          todo.categoryId === categoryId ? { ...todo, categoryId: fallbackCategoryId } : todo,
+        ),
+      }
+    })
   },
 }))

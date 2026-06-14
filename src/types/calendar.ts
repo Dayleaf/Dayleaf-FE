@@ -46,6 +46,7 @@ export type CalendarTodo = {
   categoryId?: string
   eventId?: string
   priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+  priorityOrder?: number
   recurrenceRule?: RecurrenceRule
   createdAt: string
 }

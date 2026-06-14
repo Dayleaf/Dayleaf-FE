@@ -60,6 +60,7 @@ export default function DailyCalendar({ date }: DailyCalendarProps) {
   const updateTodo = useCalendarStore((state) => state.updateTodo)
   const toggleTodo = useCalendarStore((state) => state.toggleTodo)
   const deleteTodo = useCalendarStore((state) => state.deleteTodo)
+  const todoCategories = useCalendarStore((state) => state.todoCategories)
   const [modalState, setModalState] = useState<ModalState>(null)
   const [selection, setSelection] = useState<SelectionState | null>(null)
   const [draftTodos, setDraftTodos] = useState<CalendarTodo[]>([])
@@ -110,7 +111,7 @@ export default function DailyCalendar({ date }: DailyCalendarProps) {
         title: todo.title,
         completed: todo.completed,
         date: draft.date,
-        categoryId: todo.categoryId ?? draft.categoryId,
+        categoryId: todo.categoryId ?? todoCategories[0].id,
         eventId: event.id,
         priority: todo.priority,
         recurrenceRule: todo.recurrenceRule,
@@ -249,8 +250,8 @@ export default function DailyCalendar({ date }: DailyCalendarProps) {
           linkedTodosSlot={
             modalState.mode === 'edit' ? (
               <EventTodoList
-                categories={calendarCategories}
-                defaultCategoryId={modalState.event.categoryId}
+                categories={todoCategories}
+                defaultCategoryId={editingEventTodos[0]?.categoryId ?? todoCategories[0].id}
                 todos={editingEventTodos}
                 onAddTodo={(title, categoryId) =>
                   addTodo({
@@ -269,8 +270,8 @@ export default function DailyCalendar({ date }: DailyCalendarProps) {
               />
             ) : (
               <EventTodoList
-                categories={calendarCategories}
-                defaultCategoryId="study"
+                categories={todoCategories}
+                defaultCategoryId={todoCategories[0].id}
                 todos={draftTodos}
                 onAddTodo={handleAddDraftTodo}
                 onDeleteTodo={handleDeleteDraftTodo}

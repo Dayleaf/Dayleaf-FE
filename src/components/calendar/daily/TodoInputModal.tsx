@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
-import { calendarCategories } from '@/lib/calendar'
-import type { RecurrenceFrequency, RecurrenceRule } from '@/types/calendar'
+import type { CalendarCategory, RecurrenceFrequency, RecurrenceRule } from '@/types/calendar'
 import styles from './dailyCalendar.module.css'
 
 export type TodoInputValues = {
@@ -14,6 +13,7 @@ export type TodoInputValues = {
 }
 
 type TodoInputModalProps = {
+  categories: CalendarCategory[]
   categoryId: string
   date: string
   onClose: () => void
@@ -42,6 +42,7 @@ function getRecurrenceRule(frequency: RecurrenceFrequency): RecurrenceRule | und
 }
 
 export default function TodoInputModal({
+  categories,
   categoryId,
   date,
   onClose,
@@ -96,12 +97,11 @@ export default function TodoInputModal({
             value={selectedCategoryId}
             onChange={(changeEvent) => setSelectedCategoryId(changeEvent.target.value)}
           >
-            {calendarCategories.map((category) => (
+            {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.label}
               </option>
             ))}
-            <option value="etc">기타</option>
           </select>
         </label>
         <label className={styles.todoField}>
